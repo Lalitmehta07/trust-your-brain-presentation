@@ -1,0 +1,147 @@
+# MASTER PROMPT — BUILD “CAN YOU TRUST YOUR OWN BRAIN?” AS ONE SELF-CONTAINED HTML FILE
+
+You are an expert frontend engineer, interaction designer, visual storyteller, and scientific presentation developer.
+
+Your task is to create a complete, visually exceptional, interactive ten-slide presentation titled:
+
+**Can You Trust Your Own Brain?**
+
+Subtitle: *How Perception, Attention, Memory, and Judgement Shape Our Reality*
+
+Your final deliverable MUST be a single, complete, downloadable `index.html` file that I can save to my Android phone and open directly in a modern browser.
+
+This is a new implementation. Do not deploy a website, create a repository, or give me instructions to assemble multiple files. Build the actual presentation.
+
+---
+
+## 1. Reference files and source material
+
+Use the supplied files as follows:
+
+**Reference `index.html`:** Inspect the uploaded HTML file carefully. Use it as a reference for visual ambition, presentation architecture, typography hierarchy, polished transitions, slide navigation, progress indicators, glassmorphism, neumorphism, custom SVG artwork, and presentation controls.
+
+Do not preserve its old presentation content about algorithmic persuasion or short-form feeds. Replace that content entirely with the new cognitive science presentation.
+
+**Research brief:** Read the supplied research brief about pivoting the presentation to “Can You Trust Your Own Brain?” Use its ten-slide structure, demonstration specifications, scientific findings, and cited sources as the content requirements.
+
+If the research brief is available in the connected repository or attached files, read it before coding. If it is unavailable, state that limitation rather than claiming to have read it.
+
+The reference file is a design and implementation reference, not a restriction requiring the old code to remain unchanged. Reuse suitable techniques only when they help the new implementation.
+
+## 2. Non-negotiable delivery requirements
+
+Produce exactly one primary deliverable: `index.html`.
+
+The file must contain all HTML markup, CSS in `<style>`, JavaScript in inline `<script>` elements, illustrations as inline SVG or CSS, icons as inline SVG, all slide content and scientific references, all interactions, and all presentation controls.
+
+### Absolutely no external runtime dependencies
+
+Do not use external CSS or JavaScript files, frameworks requiring imports/build steps, CDNs, Google Fonts or other remote fonts, remote images/icon services/SVG files, `fetch()` to load content or assets, ES module imports, WebSockets, MQTT, external APIs, server-dependent features, a development server, or package installation.
+
+Use system font stacks with carefully chosen fallbacks. Draw custom graphics using inline SVG. Everything needed to render and operate the presentation must already be inside the HTML file.
+
+The presentation must work when opened from a local `file://` URL after downloading. Do not depend on GitHub Pages, hosting, localhost, or a network connection.
+
+Do not make remote-control, synchronization, QR-code, or online telemetry features prerequisites. Prioritize reliable local operation.
+
+**Deliver the actual HTML file, not merely source pasted into chat, a plan, mock-up, or partial sample.** If your environment supports downloadable file artifacts, create the artifact and provide it directly.
+
+## 3. Design direction
+
+The supplied reference uses a light, premium, architectural presentation aesthetic. Preserve that level of design quality while making the new visual identity appropriate for cognitive science.
+
+Use a refined light palette inspired by porcelain and alabaster backgrounds, deep navy typography, cobalt and indigo accents, restrained coral and emerald highlights, soft neumorphic controls, translucent glass-like surfaces with subtle borders and shadows, and custom generative vector illustrations.
+
+The presentation should feel like a carefully art-directed interactive keynote, not a generic website template.
+
+Use strong typographic hierarchy, large concise headlines, clear supporting explanations, consistent spacing/alignment, distinct visual identities for perception/attention/memory/judgement, purposeful animation, subtle transitions, meaningful data visualizations and diagrams, large high-contrast controls, and readable layouts for classroom projection and 4K displays.
+
+Avoid excessive cards, tiny text, ornamental filler, cluttered dashboards, and decorative graphics that communicate nothing. The title slide should be memorable. Each subsequent slide should have a clear focal point and one primary learning objective.
+
+## 4. Presentation architecture
+
+Create a self-contained slide deck inside one HTML document, with ten independently navigable slides. Only the active slide should receive interaction.
+
+Include slide number and section identification, current slide and total count, progress indicator, previous/next controls, keyboard navigation, touch-friendly navigation, fullscreen control using the Fullscreen API when available, reset/replay controls for demonstrations, a useful opening state, and a final synthesis/Q&A state.
+
+Support left/right arrows and Space for navigation without interfering with focused buttons or form controls. Support Home and End for first/last slides. Escape should dismiss overlays or exit fullscreen according to browser behavior.
+
+Use semantic HTML, visible focus indicators, accessible button labels, and reduced-motion behavior. Navigation must not depend on animation events completing; rapid navigation must not leave the deck stuck between slides.
+
+## 5. Required ten-slide narrative
+
+Implement all ten slides as real, working presentation content.
+
+### Slide 1 — Perception: brightness contrast
+Title: *Your Brain Does Not Simply Record Reality.* Show two visually identical squares with the exact same fill colour, `#7A7A7A`, against different surrounding backgrounds, one dark and one light. Provide an interactive reveal making equality obvious, such as a connecting bar or aligned comparison. Explain that perceived brightness depends partly on context, not just the physical stimulus. The squares must have identical underlying colours; do not fake the effect with different fills.
+
+### Slide 2 — Perception: the Ebbinghaus illusion
+Show two target circles of equal diameter surrounded by different-sized inducers. Follow the brief's geometry where practical: target radius 42 SVG units, one target surrounded by six large inducers of radius 85, the other by eight small inducers of radius 18. Arrange them so the illusion is legible and nothing overlaps or clips. Add a reveal control that fades the inducers and displays measurement guides, demonstrating equal target diameters. Explain visual context and relative size judgments.
+
+### Slide 3 — Perception: ambiguous figures
+Create a recognizable Duck-Rabbit ambiguous figure using original inline SVG paths. Let the audience explore both interpretations with explicit controls and contextual cues. Do not rely on an external image. Explain how one stimulus can support different interpretations and how expectations/context can influence perception.
+
+### Slide 4 — Attention: selective-attention challenge
+Create a playable timed visual challenge lasting about 12 seconds. Ask the audience to count bounces of a white circle moving through a clearly defined arena. Include unexpected anomalies where feasible: a star crossing the scene, a change in arena border, and a dark disc changing into a square. Afterward, let viewers submit or reveal their count. Provide replay mode highlighting anomalies and explaining why visible events can be missed while attending to another task.
+
+Requirements: local animation; no network-dependent timing; start only on request; replay/reset; no uncontrolled animation after pausing or switching slides; reduced-motion alternative without making the task impossible. Do not claim this is a standardized attention assessment.
+
+### Slide 5 — Memory: false memories and the DRM paradigm
+Introduce memory as reconstructive, not a perfect recording. Present these words individually, approximately 1.2 seconds each: Bed, Rest, Awake, Tired, Dream, Wake, Snooze, Blanket, Doze, Slumber, Snore, Yawn. Do not include the critical lure “Sleep”. Then present a recall/recognition poll: Tired, Blanket, Sleep, Window. Allow selections and reveal which words were presented and which was the critical lure. Explain the DRM paradigm and distinguish this classroom illustration from a controlled research experiment.
+
+### Slide 6 — Memory: question wording and recollection
+Build an interactive exploration of the Loftus and Palmer 1974 experiment. Allow comparison of the verbs Contacted, Hit, Bumped, Collided, Smashed. Explain how wording influenced participants' estimated vehicle speeds. Distinguish first-experiment estimated speeds from follow-up glass-question findings. The brief identifies 31.8 mph for “contacted” and 40.8 mph for “smashed” in the original speed-estimation experiment; verify these against the source material. Preserve relevant original percentages for false glass reports in the follow-up and identify comparison groups accurately. Do not imply wording arbitrarily rewrites all memories or that every eyewitness account is unreliable.
+
+### Slide 7 — Judgement: Wason 2-4-6 task
+Create a functional rule-discovery game. Show sequence 2, 4, 6. Tell viewers it follows a rule and allow them to submit triples to test hypotheses. Give informative feedback about whether each triple fits the hidden rule without revealing it prematurely. The rule is **any three numbers in ascending order**. Allow testing, discovery, and reveal. Explain confirmation bias, hypothesis testing, and disconfirming evidence. Do not accept only even numbers or sequences increasing by two.
+
+### Slide 8 — Judgement: confidence versus accuracy
+Create an interactive demonstration of confidence calibration. Use a small, comprehensible set of questions/predictions or confidence judgments. Let viewers record confidence before revealing answers, then compare confidence and correctness. Visually distinguish confidence, actual accuracy, and calibration. Use illustrative data or viewer responses, clearly labelled; do not invent findings or present this as a validated psychological assessment. Explain that confidence is not the same as accuracy.
+
+### Slide 9 — Practical habits for better reasoning
+Present four actionable, evidence-informed habits: (1) separate observations from interpretations; (2) protect attention and reduce avoidable distractions; (3) record important details before later information can contaminate recollection; (4) consider alternatives and seek disconfirming evidence. Use a concise before/after comparison or interactive checklist. Give a realistic example for each habit. Do not promise any habit eliminates bias.
+
+### Slide 10 — Synthesis and Q&A
+Synthesize: perception is influenced by context; attention is selective; memory is reconstructive; judgement improves when we test assumptions. Emphasize that the brain is adaptive, not defective, and that predictable limitations can be managed through better habits and environments. Provide a final audience question, clean Q&A mode, and a restart control.
+
+## 6. Scientific source integrity
+
+Use the supplied research brief as the primary guide. Preserve relevant citations, author names, dates, and caveats. Where the brief contains contradictory values or unclear claims, verify against cited original work when reliable access is available. Do not fabricate references, results, quotations, or methods. If a number cannot be verified, qualify or omit it instead of presenting it as certain. Include compact, legible sources within the final slide or an accessible in-deck reference overlay. Citations must be embedded in the HTML, not loaded remotely.
+
+## 7. Implementation and reliability constraints
+
+Engineer for local-file execution. Use ordinary inline scripts compatible with modern mobile browsers. Avoid module scripts/import maps, server/build/package dependencies, and cross-origin requests. Use stable IDs and predictable interaction state. Scope slide styles. Give every interactive control a real handler. Prevent timers/animation loops from accumulating after replay or slide changes. Handle rapid clicks and keyboard navigation safely. Ensure decorative elements do not block controls. Avoid browser APIs unreliable without a secure context unless optional and backed by a fallback. Use inline SVG for illustrations/charts/icons. Use `requestAnimationFrame` appropriately and clean up scheduled work. Fullscreen is an enhancement, not a requirement. Do not rely on external fonts for layout measurements.
+
+### Responsive layout
+
+Support Android phones, tablets, laptops, desktop displays, and large classroom projectors/4K smart boards. Use a responsive stage. Avoid a rigid desktop canvas that crops content on phones. At narrow sizes, reflow content and permit scrolling when necessary; do not apply global `overflow:hidden` that makes content or controls inaccessible. Keep buttons touch-friendly and demonstrations within the viewport.
+
+### Graceful degradation
+
+If an optional browser feature is unavailable, the rest of the presentation must still work. Animation, fullscreen, audio, or any optional feature must not be required to understand the content.
+
+## 8. Quality assurance before delivery
+
+Before delivering:
+1. Inspect the complete HTML structure.
+2. Check all ten slides exist and are navigable.
+3. Check for unclosed tags, duplicate IDs, malformed SVG, missing assets, and obvious JavaScript errors.
+4. Verify styles/scripts/assets are inline.
+5. Verify no remote assets or runtime network requests are required.
+6. Check controls, timer, replay, reveal, word sequence, polls, and rule-discovery game.
+7. Review responsive CSS for narrow screens and large displays.
+8. Check scientific values and references against the brief.
+9. Confirm the file can open locally without a build step.
+10. If a real browser/test environment is available, test it. Otherwise perform static checks and explicitly state browser testing remains unverified.
+
+Never claim to have run tests that were not run. Do not spend the entire response explaining implementation; deliver the artifact.
+
+## 9. Final output
+
+Produce one complete downloadable file named `index.html`, containing the finished presentation and all CSS, JavaScript, content, and vector artwork.
+
+The final response should include a direct download link, a brief note that it opens locally without hosting/internet, and a concise honest summary of tests and limitations.
+
+Do not make GitHub Pages deployment or repository setup part of the workflow. Do not deliver a folder of separate files.
+
+**Begin by examining the supplied reference HTML and research brief. Then build the complete presentation and return the actual downloadable `index.html` file.**
