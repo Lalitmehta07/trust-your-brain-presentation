@@ -1,0 +1,196 @@
+# QWEN REVISION MASTER PROMPT — VERSION 2
+# CAN YOU TRUST YOUR OWN BRAIN?
+# Revise the existing deck and FIX GITHUB PAGES.
+
+Repository: https://github.com/Lalitmehta07/trust-your-brain-presentation
+
+This is a revision of the existing presentation, not a new unrelated project. Inspect the actual repository and current HTML first. Implement the changes, test them, commit and push them, and verify the live site. Do not stop at a plan.
+
+## 1. Critical: fix the GitHub Pages homepage
+
+The current Pages URL displays the repository README instead of the presentation. The current presentation was generated in a nested folder named `trust-your-brain-deck/`, while the repository root has no presentation homepage.
+
+The finished presentation MUST be a complete, self-contained `index.html` at the repository root:
+
+`/index.html`
+
+Do not leave the only copy at `/trust-your-brain-deck/index.html`. Use the existing nested deck as the starting point, revise it, and place the final version at root. Keep README.md as documentation; do not replace it.
+
+Configure GitHub Pages to deploy from branch `main`, folder `/(root)`. If the integration supports Pages settings, configure them. Otherwise explain the exact manual setting needed, or create a correct Pages Actions workflow if appropriate. Verify deployment status; do not claim success merely because code was pushed.
+
+Expected live URL:
+https://lalitmehta07.github.io/trust-your-brain-presentation/
+
+Also provide the raw root HTML URL:
+https://raw.githubusercontent.com/Lalitmehta07/trust-your-brain-presentation/main/index.html
+
+Preserve existing prompt/research files and Git history. Never force-push or delete unrelated files.
+
+## 2. Preserve the working foundation
+
+The user tested the existing ten-slide deck on an Android browser. Preserve its useful structure and working interactions. Do not start from zero.
+
+Feedback:
+- Slide 1: two grey squares looked the same; improve the brightness contrast.
+- Slide 2: Ebbinghaus illusion is clear; preserve it.
+- Slide 3: Duck-Rabbit was unrecognizable; remove it and replace with one-audio/multiple-interpretations experiment.
+- Slide 4: four fast balls and 15 bounces were too difficult; simplify.
+- Slide 5: word-list false-memory demonstration worked; preserve it.
+- Slide 6: Loftus–Palmer experiment was confusing; restructure and explain clearly.
+- Slide 7: Wason 2-4-6 was too difficult; remove it and replace with a simple visual confirmation-bias demonstration.
+- Slide 8: make confidence versus accuracy interactive.
+- Slides 9 and 10: preserve core content and polish.
+
+## 3. Revised ten-slide plan
+
+### Slide 1 — Brightness contrast (redesign)
+Use two physically identical target patches with exactly the same fill colour, one against a distinctly dark surround and one against a distinctly light surround. Make them large and visible at classroom distance. Do not fake the effect by using different target colours. Add a reveal that removes/masks the surrounds and places both patches side by side on one neutral background, proving their physical equality. Explain context-dependent brightness perception. If the illusion is subtle on a particular display, the equality reveal must still teach the point clearly.
+
+### Slide 2 — Ebbinghaus illusion (preserve)
+Keep the current successful orange target circles, surrounding circles, geometry and reveal/measurement interaction. Only fix genuine bugs.
+
+### Slide 3 — Auditory perception: one audio, multiple heard responses (replace Duck-Rabbit)
+Remove Duck-Rabbit artwork and controls completely.
+
+Build a Brainstorm / Green Needle-style perceptual-priming demonstration. The central requirement is ONE audio recording only. The exact same recording must be replayed in every round. Never switch recordings, alter playback speed, equalization, or waveform between rounds.
+
+Sequence:
+1. Unprimed listen: neutral screen, play the clip, ask what people heard.
+2. Visual prime 1: display “BRAINSTORM”, replay the exact same clip.
+3. Visual prime 2: display “GREEN NEEDLE”, replay the exact same clip.
+4. Reveal that the recording never changed; only the visual expectation changed. Poll the audience after each round.
+
+This is NOT a dichotic listening task. Do not use two speakers, simultaneous voice streams, or different recordings.
+
+Use a verified, legally usable audio recording supplied by the user or otherwise legitimately available. Do not hotlink or scrape copyrighted audio. If no suitable source audio is available, implement the full slide UI and clearly state that the user must supply/embed one recording; do not fake the famous illusion with two synthesized phrases. The final HTML must embed the same audio asset locally as a data URI so it works offline. During the experiment, pause/duck BGM and action sounds. Do not overlay narration.
+
+Explain that auditory expectations can influence perception and that not everyone necessarily hears both interpretations.
+
+### Slide 4 — Selective attention (simplify)
+Use ONE primary white ball, a slower predictable path, and about 5–7 clear wall bounces over 10–12 seconds. Ask the audience to count only those bounces. Add only one or two unexpected events, introduced separately, not several simultaneous distractions. Let the audience submit a count, then replay the same sequence with anomalies highlighted. Provide start/replay/reset. Stop timers and animations when leaving the slide. This is an illustration, not a standardized test.
+
+### Slide 5 — DRM false memory (preserve)
+Keep the working list, one word at a time:
+Bed, Rest, Awake, Tired, Dream, Wake, Snooze, Blanket, Doze, Slumber, Snore, Yawn.
+Never present “Sleep” in the list. Poll Tired, Blanket, Sleep, Window. Reveal presented words versus the critical lure. Preserve the caveat that this is an illustrative classroom activity, not a controlled replication.
+
+### Slide 6 — Loftus–Palmer (major redesign)
+Make the sequence easy to follow:
+1. Show a simple locally rendered car-collision animation.
+2. Explain that all groups saw the same collision.
+3. Display: “About how fast were the cars going when they ___ each other?”
+4. Let the audience tap CONTACTED, HIT, BUMPED, COLLIDED, or SMASHED.
+5. Explain that the original study used different wording with different participant groups; one participant did not hear all five versions.
+6. Reveal a clear chart of original estimated speeds by verb.
+7. Explain the follow-up glass question separately and accurately.
+
+Verify every numerical value and comparison group against the research brief/original study. The brief identifies 31.8 mph for “contacted” and 40.8 mph for “smashed” in Experiment 1; verify intermediate values. Do not confuse Experiment 1 speed estimates with Experiment 2 glass reports. Explain in plain language: what participants saw, what wording changed, what was measured, what the result suggests, and what it does not prove. Do not overstate the study.
+
+### Slide 7 — Confirmation bias (replace Wason)
+Remove the 2-4-6 game, number sequences, triple-entry controls and hidden-rule puzzle.
+
+Create a very simple, neutral, non-political visual activity. Show a plausible claim/hypothesis and several evidence cards, some supporting and some challenging it. Ask the audience to tap what they would inspect first. Reveal selected supporting evidence, then reveal overlooked contradictory evidence. Explain that people can preferentially seek or interpret evidence that supports an existing belief. End with: “What evidence would change my mind?” Make it understandable within seconds and touch-first; do not present it as a validated psychological test.
+
+### Slide 8 — Confidence versus accuracy (interactive)
+Ask one or two simple questions with unambiguous answers. Before revealing each answer, let the audience choose a confidence level using large touch controls. Reveal correctness and compare confidence with accuracy. Clearly label the tiny activity as illustrative, not a psychological assessment.
+
+### Slide 9 — Practical habits (preserve/polish)
+Retain:
+1. Separate direct observations from interpretations.
+2. Protect attention and reduce distractions.
+3. Record important details before later information contaminates recollection.
+4. Consider alternatives and seek disconfirming evidence.
+Keep it concise and visual.
+
+### Slide 10 — Synthesis/Q&A (preserve/polish)
+Retain: perception is context-influenced; attention is selective; memory is reconstructive; judgement improves when assumptions are tested. Keep Q&A and experiment replay shortcuts.
+
+## 4. Visual design: stronger hybrid neumorphism
+
+Use a hybrid:
+- Strong raised/recessed surfaces for buttons, controls, toggles, sliders and experiment panels.
+- Soft shadows, tactile surfaces, subtle borders.
+- Porcelain/alabaster background, deep navy type, cobalt/indigo accents, restrained coral and emerald.
+- Keep experiment graphics clean; don't apply heavy neumorphism to every diagram.
+- Ensure high contrast and clear disabled/enabled states.
+
+Every slide needs its own subtle animated vector background and a distinct relevant icon. Use inline SVG/CSS only. Keep backgrounds low-contrast and behind content. Pause animations on inactive slides and respect `prefers-reduced-motion`.
+
+Suggested motifs: contrast fields; expanding circles; waveform; attention path; memory traces; collision timeline; evidence nodes; confidence gauge; four habit icons; converging theme lines.
+
+## 5. Audio controls
+
+Provide two independent persistent controls:
+- Background music ON/OFF plus volume.
+- Action sounds ON/OFF plus volume.
+
+Muting one must not mute the other. Do not autoplay before user interaction. Use embedded local audio or Web Audio API effects only; no remote audio URLs. Stop/fade slide-specific sounds when leaving a slide. Keep levels classroom-appropriate. Provide a master mute if practical.
+
+During Slide 3, automatically duck/pause BGM and disable action sounds so the single test recording is heard clearly. Restore prior audio state only if the presenter has not changed it during the experiment. Do not play music or narration over the test recording.
+
+## 6. Smart-board navigation — mandatory
+
+The user operates an 80-inch smart board and cannot reach across the screen.
+
+- Put Previous and Next controls together at the BOTTOM-LEFT.
+- Keep them fixed in the same position on every slide.
+- Make them large, high-contrast and touch-friendly.
+- Keep slide count/progress beside them.
+- No slide-changing controls at bottom-right.
+- Remove every visible “or press A” instruction and all keyboard hints.
+- Keyboard support may remain as an optional fallback but must not be mentioned or required.
+- Fullscreen/audio settings may sit in a separate top-right settings area.
+- All experiment controls must be touch-first and large enough for a smart board.
+
+## 7. Self-contained HTML requirements
+
+The final presentation must be ONE file named `index.html`:
+- All HTML/CSS/JS inline.
+- All icons and vector art inline SVG/CSS.
+- Audio embedded locally or generated with Web Audio API.
+- No external fonts, scripts, stylesheets, images, libraries, APIs, CDNs or runtime network requests.
+- No server, build step or package installation.
+- Must open locally from Android `file://` after download.
+
+The exact same root `index.html` must be served by GitHub Pages.
+
+## 8. Testing
+
+Actually check:
+- All ten slides and navigation.
+- Bottom-left touch controls; no visible keyboard hints.
+- Slide 2 and Slide 5 still work.
+- Slide 1 identical fills and equality reveal.
+- Slide 3 replays the exact same audio asset in every round; BGM/actions do not mask it.
+- Slide 4 one ball and manageable bounce count.
+- Slide 6 experiment sequence and verified values.
+- Slide 7 no Wason game; simple confirmation-bias activity works.
+- Slide 8 response and reveal.
+- Independent audio toggles and cleanup on slide change.
+- Inactive animations stop; reduced-motion works.
+- Android/mobile and large-screen responsive layout.
+- Local file operation and absence of external runtime dependencies.
+- Root index.html is present and GitHub Pages serves it.
+
+Never claim tests you did not perform. If browser testing is unavailable, say so.
+
+## 9. Work sequence and final response
+
+1. Inspect repository, current deck and Pages configuration.
+2. Diagnose why Pages currently shows README.
+3. Revise existing presentation using this specification.
+4. Put the final complete presentation at repository root as `index.html`.
+5. Test as much as possible.
+6. Commit and push safely; never force-push.
+7. Configure Pages `main` + `/(root)` or explain the exact manual setting.
+8. Verify the live deployment.
+
+Final response must include:
+- Live Pages URL: https://lalitmehta07.github.io/trust-your-brain-presentation/
+- Raw HTML URL: https://raw.githubusercontent.com/Lalitmehta07/trust-your-brain-presentation/main/index.html
+- Actual tests performed and limitations.
+- Whether a legally usable Brainstorm/Green Needle audio asset was available or the user must supply one.
+
+Do not claim deployment is complete until the live site is verified. Do not stop after planning. Implement the actual revision using the connected repository.
+
+**Start by inspecting the repository and diagnosing GitHub Pages.**
