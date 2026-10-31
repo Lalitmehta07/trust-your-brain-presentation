@@ -469,8 +469,9 @@ body.remote-mode #remote-app{display:flex}
                     <mask id="dr-mask"><rect x="0" y="0" width="600" height="440" fill="url(#dr-fade)"></rect></mask>
                     <clipPath id="dr-clip-left"><rect x="0" y="0" width="250" height="440"></rect></clipPath>
                   </defs>
-                  <rect id="dr-overlay" x="0" y="0" width="250" height="440" clip-path="url(#dr-clip-left)" fill="#F59E0B" opacity="0" style="transition:opacity .4s ease"></rect>
+                  <!-- overlay sits BEHIND the line art (spec: translucent colour behind the drawing) -->
                   <g mask="url(#dr-mask)">
+                    <rect id="dr-overlay" x="0" y="0" width="250" height="440" clip-path="url(#dr-clip-left)" fill="#F59E0B" opacity="0" style="transition:opacity .4s ease"></rect>
                     <path d="M 330 112 C 270 98, 160 98, 64 124 C 48 130, 50 150, 68 152 C 150 160, 235 168, 300 182 L 300 192 C 235 190, 160 186, 92 182 C 74 182, 70 200, 90 204 C 160 212, 250 226, 308 262 C 316 300, 330 340, 336 400 L 492 400 C 486 340, 492 300, 500 262 C 540 258, 552 214, 538 178 C 524 140, 480 108, 420 104 C 385 102, 355 106, 330 112"
                           fill="none" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"></path>
                     <path d="M 462 254 C 490 258, 520 250, 537 233" fill="none" stroke="#0F172A" stroke-width="6" stroke-linecap="round"></path>
@@ -948,11 +949,11 @@ function rafStop(obj){
    =============================================================== */
 (function(){
   var step = 0;               // 0 none, 1 duck, 2 rabbit
-  var overlay, labels;
-  function setReading(mode){     // 'duck' | 'rabbit' | null  (manual highlight)
-    overlay = $('dr-overlay');
-    labels = {bill:$('dr-l-bill'), ears:$('dr-l-ears'), mouth:$('dr-l-mouth'), duck:$('dr-l-duck'), rabbit:$('dr-l-rabbit')};
-    var l = labels;
+  var reading = null;         // manual/guided highlight state: 'duck' | 'rabbit' | null
+  function setReading(mode){     // 'duck' | 'rabbit' | null
+    reading = mode;
+    var overlay = $('dr-overlay');
+    var l = {bill:$('dr-l-bill'), ears:$('dr-l-ears'), mouth:$('dr-l-mouth'), duck:$('dr-l-duck'), rabbit:$('dr-l-rabbit')};
     Object.keys(l).forEach(function(k){ if(l[k]) l[k].setAttribute('opacity','0'); });
     if(!overlay) return;
     if(mode==='duck'){
@@ -971,13 +972,10 @@ function rafStop(obj){
     if(db) db.setAttribute('aria-pressed', mode==='duck'?'true':'false');
     if(rb) rb.setAttribute('aria-pressed', mode==='rabbit'?'true':'false');
   }
+  /* one listener per manual button (no duplicates) */
   $('dr-duck-btn').addEventListener('click', function(){ setReading(reading==='duck'?null:'duck'); });
   $('dr-rabbit-btn').addEventListener('click', function(){ setReading(reading==='rabbit'?null:'rabbit'); });
-  var reading = null;
-  // wrap manual buttons to track state
-  function manualSet(m){ reading = m; setReading(m); }
-  $('dr-duck-btn').onclick = function(){ manualSet(reading==='duck'?null:'duck'); };
-  $('dr-rabbit-btn').onclick = function(){ manualSet(reading==='rabbit'?null:'rabbit'); };
+  function manualSet(m){ setReading(m); }
 
   DEMOS[2] = {
     label: function(){ return step===0 ? "Show the duck reading" : (step===1 ? "Show the rabbit reading" : null); },
