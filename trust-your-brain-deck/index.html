@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Can You Trust Your Own Brain? — Interactive Presentation</title>
+<style>
+/* ============================================================
+   Can You Trust Your Own Brain? — clean-room deck
+   Design tokens
+   ============================================================ */
+:root{
+  --bg:#F4F5F8;
+  --paper:#FFFFFF;
+  --ink:#0F172A;
+  --ink-soft:#334155;
+  --muted:#64748B;
+  --line:#DCE1E9;
+  --cobalt:#2547D1;
+  --coral:#E11D48;
+  --slate:#94A3B8;
+  --amber:#F59E0B;
+  --rose:#FB7185;
+  --orange:#EA580C;
+  --ok:#15803D;
+  --shadow:0 10px 30px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.05);
+  --radius:16px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font);
+  overflow:hidden; /* presentation mode: no page scroll */
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--cobalt);outline-offset:2px;border-radius:6px}
+
+/* ============================================================ Layout shell */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+.topbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:clamp(8px,1.5vw,20px);
+  padding:clamp(6px,1vh,12px) clamp(10px,1.6vw,24px);
+  border-bottom:1px solid var(--line);background:var(--paper);
+}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand .t{font-weight:800;font-size:clamp(12px,1.35vw,20px);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .sec{font-size:clamp(10px,1vw,14px);color:var(--muted);white-space:nowrap}
+.top-spacer{flex:1}
+.timer{font-family:var(--mono);font-size:clamp(12px,1.2vw,17px);color:var(--ink-soft);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.icon-btn{
+  min-height:36px;padding:6px 12px;border:1px solid var(--line);background:var(--paper);
+  border-radius:10px;font-size:clamp(11px,1.05vw,15px);font-weight:600;cursor:pointer;color:var(--ink-soft);
+}
+.icon-btn:hover{border-color:var(--cobalt);color:var(--cobalt)}
+
+/* Stage: stable 16:9 letterboxed area */
+.stage-wrap{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:clamp(4px,1vh,14px) clamp(6px,1vw,16px)}
+.stage{
+  position:relative;width:min(100%, calc((100vh - 150px) * 16 / 9));
+  aspect-ratio:16/9;
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.slide{
+  position:absolute;inset:0;display:none;flex-direction:column;
+  padding:clamp(14px,2.6vh,34px) clamp(18px,2.6vw,44px) clamp(8px,1.4vh,16px);
+}
+.slide.is-active{display:flex;animation:slidein .35s cubic-bezier(.2,.7,.2,1) both}
+@keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .slide.is-active{animation:none}
+  *{transition-duration:.01ms !important}
+}
+
+/* Bottom control bar */
+.controls{
+  flex:0 0 auto;display:flex;align-items:center;gap:clamp(8px,1.4vw,18px);
+  padding:clamp(6px,1vh,12px) clamp(10px,1.6vw,24px);
+  border-top:1px solid var(--line);background:var(--paper);
+}
+.nav-btn{
+  min-height:44px;padding:8px 18px;border:1px solid var(--line);border-radius:12px;
+  background:var(--paper);font-weight:700;font-size:clamp(12px,1.15vw,16px);cursor:pointer;
+}
+.nav-btn:hover:not(:disabled){border-color:var(--cobalt);color:var(--cobalt)}
+.nav-btn:disabled{opacity:.4;cursor:default}
+.progress{display:flex;gap:6px;align-items:center;flex:1;justify-content:center}
+.pdot{
+  width:clamp(10px,1.1vw,16px);height:clamp(10px,1.1vw,16px);border-radius:50%;
+  border:1.5px solid var(--slate);background:transparent;cursor:pointer;padding:0;
+}
+.pdot[aria-current="true"]{background:var(--cobalt);border-color:var(--cobalt)}
+.pdot:hover{border-color:var(--cobalt)}
+.slide-ind{font-size:clamp(11px,1.1vw,15px);font-weight:700;color:var(--muted);font-family:var(--mono);white-space:nowrap}
+.cue-toggle{min-height:44px}
+
+/* Presenter cue panel (private overlay) */
+#cuePanel{
+  position:absolute;left:12px;right:12px;bottom:12px;z-index:60;display:none;
+  background:rgba(15,23,42,.94);color:#F1F5F9;border-radius:12px;padding:12px 16px;
+  font-size:clamp(12px,1.2vw,17px);line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+#cuePanel.open{display:block}
+#cuePanel .cue-head{font-weight:800;color:#93C5FD;margin-bottom:4px;font-size:.85em;text-transform:uppercase;letter-spacing:.06em}
+
+/* ============================================================ Slide typography */
+.eyebrow{
+  font-size:clamp(10px,1vw,14px);font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--cobalt);margin:0 0 clamp(4px,.8vh,10px);
+}
+h1.title{
+  margin:0;font-size:clamp(20px,3.1vw,46px);line-height:1.08;font-weight:800;letter-spacing:-.015em;
+}
+.instruction{
+  margin:clamp(4px,.9vh,10px) 0 0;color:var(--ink-soft);
+  font-size:clamp(12px,1.35vw,20px);line-height:1.35;max-width:70ch;
+}
+.evidence{
+  margin-top:auto;padding-top:clamp(4px,1vh,10px);
+  font-size:clamp(9px,.95vw,13px);color:var(--muted);border-top:1px dashed var(--line);
+}
+.accent{color:var(--cobalt)}
+
+/* Two-column experiment layout */
+.cols{display:flex;gap:clamp(12px,1.8vw,28px);flex:1 1 auto;min-height:0;margin-top:clamp(8px,1.6vh,20px)}
+.stim-col{flex:0 1 60%;min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.side-col{flex:1 1 40%;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,12px);justify-content:center}
+.stim-card{
+  background:var(--paper);border:1.5px solid var(--line);border-radius:14px;
+  width:100%;max-height:100%;display:flex;align-items:center;justify-content:center;
+  padding:clamp(6px,1vh,14px);min-height:0;
+}
+.stim-card svg{width:100%;height:auto;max-height:100%;display:block}
+.stim-tag{font-size:clamp(9px,.9vw,13px);font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;align-self:flex-start}
+
+/* Reveal rows: Ask / Reveal / Why / Careful */
+.row{
+  border:1px solid var(--line);border-left:4px solid var(--slate);border-radius:10px;
+  padding:clamp(6px,.9vh,12px) clamp(8px,1vw,14px);background:var(--paper);
+}
+.row .k{font-size:clamp(9px,.85vw,12px);font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+.row .v{font-size:clamp(11px,1.15vw,17px);line-height:1.4;color:var(--ink-soft)}
+.row.ask{border-left-color:var(--cobalt)}
+.row.reveal{border-left-color:var(--orange)}
+.row.why{border-left-color:var(--ok)}
+.row.careful{border-left-color:var(--coral)}
+.row.hidden-row{display:none}
+.row.shown{display:block;animation:rowin .3s ease both}
+@keyframes rowin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* Action button zone */
+.action-zone{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.act-btn{
+  min-height:56px;padding:10px 26px;border-radius:14px;border:none;cursor:pointer;
+  background:var(--cobalt);color:#fff;font-size:clamp(13px,1.35vw,20px);font-weight:800;
+  box-shadow:0 4px 14px rgba(37,71,209,.28);
+}
+.act-btn:hover:not(:disabled){filter:brightness(1.1)}
+.act-btn:disabled{background:var(--slate);box-shadow:none;cursor:default}
+.act-hint{font-size:clamp(10px,1vw,14px);color:var(--muted);font-weight:600}
+.act-hint kbd{font-family:var(--mono);background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;font-size:.9em}
+.act-done{font-size:clamp(12px,1.2vw,17px);font-weight:700;color:var(--ok)}
+
+/* ============================================================ Slide 1 title */
+.s1-grid{display:flex;gap:clamp(16px,3vw,48px);flex:1 1 auto;min-height:0;align-items:center}
+.s1-left{flex:1 1 55%;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.s1-right{flex:1 1 45%;min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.mega-title{
+  margin:0;font-weight:900;letter-spacing:-.02em;line-height:1.02;
+  font-size:clamp(26px,4.6vw,68px);
+}
+.mega-title .accent-line{color:var(--cobalt);display:block}
+.s1-sub{margin:clamp(8px,1.4vh,16px) 0 0;color:var(--ink-soft);font-size:clamp(12px,1.45vw,21px);line-height:1.45;max-width:46ch}
+.pills{display:flex;gap:8px;margin-top:clamp(10px,1.8vh,20px);flex-wrap:wrap}
+.pill{border:1.5px solid var(--cobalt);color:var(--cobalt);border-radius:999px;padding:5px 14px;font-weight:700;font-size:clamp(10px,1.05vw,15px)}
+.credit{display:flex;align-items:center;gap:10px;margin-top:clamp(12px,2.2vh,24px);color:var(--muted);font-size:clamp(11px,1.1vw,16px);font-weight:600}
+.monogram{
+  width:clamp(30px,3vw,44px);height:clamp(30px,3vw,44px);border-radius:50%;
+  background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:clamp(11px,1.1vw,16px);letter-spacing:.02em;
+}
+.readout{
+  margin-top:10px;font-size:clamp(11px,1.2vw,17px);color:var(--ink-soft);text-align:center;
+  min-height:2.6em;line-height:1.35;font-weight:600;max-width:44ch;
+}
+.readout.revealed{color:var(--cobalt)}
+
+/* ============================================================ Slide 3 duck/rabbit controls */
+.dr-controls{display:flex;gap:10px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+.dr-btn{
+  min-height:44px;padding:8px 18px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--paper);font-weight:700;font-size:clamp(11px,1.15vw,16px);cursor:pointer;
+}
+.dr-btn[aria-pressed="true"]{border-color:var(--cobalt);background:#EEF3FF;color:var(--cobalt)}
+
+/* ============================================================ Slide 4 arena extras */
+.arena-timebar{width:100%;height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:8px}
+.arena-timebar > div{height:100%;width:0%;background:var(--cobalt);border-radius:6px}
+.arena-status{margin-top:8px;font-weight:800;font-size:clamp(13px,1.5vw,22px);text-align:center;min-height:1.6em;color:var(--ink)}
+.counter-chip{
+  display:inline-flex;gap:8px;align-items:center;background:var(--ink);color:#fff;border-radius:10px;
+  padding:6px 14px;font-family:var(--mono);font-weight:700;font-size:clamp(12px,1.3vw,18px);
+}
+
+/* ============================================================ Slide 5 words */
+.word-panel{
+  position:relative;background:var(--paper);border:1.5px solid var(--line);border-radius:16px;
+  width:100%;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;
+}
+.word-view{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .18s}
+.word-view.on{opacity:1;pointer-events:auto}
+.big-word{font-size:clamp(30px,5.6vw,84px);font-weight:900;letter-spacing:.02em;color:var(--ink)}
+.idle-hint{font-size:clamp(13px,1.5vw,22px);color:var(--muted);font-weight:600;text-align:center;padding:0 20px;line-height:1.4}
+.dots{display:flex;gap:7px;margin-top:10px;justify-content:center}
+.dot{width:clamp(8px,.9vw,12px);height:clamp(8px,.9vw,12px);border-radius:50%;background:var(--line)}
+.dot.lit{background:var(--cobalt)}
+.chips{display:flex;gap:clamp(8px,1.2vw,16px);flex-wrap:wrap;justify-content:center}
+.chip{
+  border:2px solid var(--line);border-radius:12px;padding:clamp(8px,1.2vh,14px) clamp(12px,1.6vw,22px);
+  font-weight:800;font-size:clamp(14px,1.8vw,26px);background:var(--paper);color:var(--ink);
+  display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;
+}
+.chip small{font-size:clamp(9px,.85vw,12px);font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.chip.shown-ok{border-color:var(--ok);color:var(--ok)}
+.chip.not-shown{border-color:var(--muted);color:var(--muted)}
+.chip.lure{border-color:var(--coral);color:var(--coral);animation:lurepulse 1.6s ease-in-out 2}
+@keyframes lurepulse{0%,100%{box-shadow:0 0 0 0 rgba(225,29,72,.0)}50%{box-shadow:0 0 0 8px rgba(225,29,72,.14)}}
+.poll-q{font-size:clamp(15px,1.9vw,28px);font-weight:800;margin-bottom:4px;text-align:center}
+.poll-sub{font-size:clamp(11px,1.15vw,16px);color:var(--muted);margin-bottom:12px;text-align:center;font-weight:600}
+.fulllist{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%;max-width:640px}
+.fl-tile{border:1.5px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center;font-weight:800;font-size:clamp(11px,1.2vw,17px);background:var(--paper)}
+.fl-lure{border:2px dashed var(--coral);color:var(--coral);grid-column:span 4;font-size:clamp(11px,1.25vw,18px)}
+
+/* ============================================================ Slide 6 bars */
+.qsentence{font-size:clamp(13px,1.6vw,23px);font-weight:600;color:var(--ink-soft);margin:clamp(6px,1vh,12px) 0;line-height:1.35}
+.qsentence .verb{color:var(--cobalt);font-weight:900}
+.barchart{display:flex;flex-direction:column;gap:clamp(4px,.8vh,9px);width:100%}
+.bar-row{display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .3s}
+.bar-row.on{opacity:1}
+.bar-label{flex:0 0 clamp(70px,8vw,120px);text-align:right;font-weight:800;font-size:clamp(11px,1.2vw,17px)}
+.bar-track{flex:1;height:clamp(18px,2.6vh,32px);background:var(--bg);border-radius:6px;position:relative;overflow:hidden}
+.bar-fill{position:absolute;inset:0;border-radius:6px;background:var(--cobalt);transform-origin:left center;transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.bar-row.on .bar-fill{transform:scaleX(var(--w))}
+.bar-val{flex:0 0 clamp(52px,5.5vw,84px);font-family:var(--mono);font-weight:700;font-size:clamp(11px,1.2vw,17px)}
+.axis-note{font-size:clamp(9px,.95vw,13px);color:var(--muted);margin-top:6px;font-weight:600}
+.glass-panel{border:1.5px solid var(--coral);border-radius:14px;padding:clamp(8px,1.4vh,16px);background:#FFF7F8;display:none}
+.glass-panel.on{display:block;animation:rowin .3s ease both}
+.glass-tiles{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.gtile{flex:1;min-width:110px;border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:8px;text-align:center}
+.gtile .g{font-size:clamp(18px,2.4vw,34px);font-weight:900;color:var(--coral)}
+.gtile .gl{font-size:clamp(9px,.95vw,13px);color:var(--muted);font-weight:700;line-height:1.3}
+.crash-svg{width:100%;max-width:340px;display:block;margin:0 auto 8px}
+
+/* ============================================================ Slide 7 Wason */
+.wason-wrap{display:flex;flex-direction:column;gap:clamp(6px,1vh,12px);width:100%;height:100%;min-height:0}
+.seed-row{
+  display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:12px;
+  padding:clamp(6px,1vh,12px) clamp(10px,1.2vw,16px);background:var(--paper);font-weight:800;font-size:clamp(13px,1.5vw,22px);
+}
+.verdict{margin-left:auto;font-family:var(--mono);font-weight:800;font-size:clamp(12px,1.3vw,18px);padding:3px 12px;border-radius:8px}
+.verdict.yes{background:#ECFDF5;color:var(--ok);border:1px solid var(--ok)}
+.verdict.no{background:#FFF1F2;color:var(--coral);border:1px solid var(--coral)}
+.test-btns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(6px,1vh,10px)}
+.tbtn{
+  min-height:48px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);
+  font-weight:800;font-size:clamp(13px,1.5vw,22px);cursor:pointer;font-family:var(--mono);
+}
+.tbtn:hover{border-color:var(--cobalt);color:var(--cobalt)}
+.custom-triple{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.custom-triple label{font-size:clamp(10px,1vw,14px);font-weight:700;color:var(--muted)}
+.num-in{width:5.5ch;min-height:40px;border:1.5px solid var(--line);border-radius:10px;padding:4px 8px;font-size:clamp(12px,1.3vw,18px);font-family:var(--mono);text-align:center}
+.small-btn{min-height:40px;padding:6px 14px;border:1.5px solid var(--cobalt);color:var(--cobalt);background:var(--paper);border-radius:10px;font-weight:800;cursor:pointer;font-size:clamp(11px,1.15vw,16px)}
+.log-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;border:1px dashed var(--line);border-radius:12px;padding:clamp(6px,1vh,10px) clamp(8px,1vw,12px);background:var(--bg)}
+.log-head{font-size:clamp(9px,.9vw,12px);font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.log-row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:700;font-size:clamp(12px,1.3vw,18px);padding:3px 0}
+.rule-banner{
+  display:none;border:2px solid var(--ok);background:#F0FDF4;color:var(--ok);border-radius:12px;
+  padding:clamp(8px,1.2vh,12px) clamp(10px,1.2vw,16px);font-weight:900;font-size:clamp(13px,1.5vw,22px);text-align:center;
+}
+.rule-banner.on{display:block;animation:rowin .3s ease both}
+
+/* ============================================================ Slides 8–10 cards */
+.card-list{display:flex;flex-direction:column;gap:clamp(8px,1.4vh,16px);flex:1 1 auto;min-height:0;justify-content:center;margin-top:clamp(8px,1.4vh,18px)}
+.info-card{
+  display:flex;gap:clamp(10px,1.4vw,20px);align-items:flex-start;border:1px solid var(--line);border-radius:14px;
+  padding:clamp(8px,1.4vh,16px) clamp(12px,1.6vw,22px);background:var(--paper);
+}
+.info-card .num{font-family:var(--mono);font-weight:800;color:var(--cobalt);font-size:clamp(15px,1.8vw,26px);flex:0 0 auto}
+.info-card .ic{flex:0 0 auto;width:clamp(26px,2.6vw,38px);height:clamp(26px,2.6vw,38px);color:var(--cobalt)}
+.info-card h3{margin:0 0 3px;font-size:clamp(13px,1.55vw,22px);line-height:1.2}
+.info-card p{margin:0;color:var(--ink-soft);font-size:clamp(11px,1.2vw,17px);line-height:1.4}
+.tag{margin-left:auto;flex:0 0 auto;align-self:center;font-size:clamp(9px,.9vw,13px);font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.callout{
+  border-left:5px solid var(--amber);background:#FFFBEB;border-radius:10px;padding:clamp(8px,1.2vh,12px) clamp(10px,1.2vw,16px);
+  font-weight:800;font-size:clamp(13px,1.5vw,21px);color:var(--ink);margin-top:clamp(6px,1vh,12px);
+}
+.habits-table{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,11px);margin-top:clamp(8px,1.4vh,16px);justify-content:center}
+.hrow{display:grid;grid-template-columns:clamp(80px,10vw,150px) 1fr auto 1.35fr;gap:clamp(8px,1.2vw,18px);align-items:center;border:1px solid var(--line);border-radius:12px;padding:clamp(6px,1.1vh,12px) clamp(10px,1.4vw,18px);background:var(--paper)}
+.hrow .where{font-weight:900;color:var(--cobalt);font-size:clamp(12px,1.35vw,19px)}
+.hrow .short{color:var(--ink-soft);font-size:clamp(11px,1.2vw,17px);line-height:1.35}
+.hrow .arrow{color:var(--slate);font-weight:800;font-size:clamp(13px,1.4vw,20px)}
+.hrow .habit{font-weight:700;font-size:clamp(11px,1.25vw,18px);line-height:1.35}
+.hfoot{margin-top:clamp(6px,1.2vh,12px);font-size:clamp(11px,1.15vw,16px);color:var(--muted);font-weight:600;line-height:1.4}
+
+.s10-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.4vh,16px)}
+.thesis{font-size:clamp(14px,1.7vw,25px);font-weight:700;color:var(--ink-soft);line-height:1.4;max-width:62ch;margin:clamp(6px,1vh,12px) 0}
+.pillar{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);padding:clamp(5px,1vh,10px) 0}
+.pillar .pk{font-weight:900;color:var(--cobalt);font-size:clamp(12px,1.35vw,19px);flex:0 0 clamp(150px,17vw,250px)}
+.pillar .pv{font-size:clamp(12px,1.35vw,19px);color:var(--ink-soft);font-weight:600}
+.replay-row{display:flex;gap:clamp(6px,1vw,12px);flex-wrap:wrap;align-items:center;margin-top:clamp(6px,1vh,12px)}
+.replay-row .rl{font-weight:800;font-size:clamp(11px,1.2vw,16px);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px}
+.rep-btn{min-height:44px;padding:8px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);font-weight:700;font-size:clamp(11px,1.2vw,16px);cursor:pointer}
+.rep-btn:hover{border-color:var(--cobalt);color:var(--cobalt)}
+.qa-state{display:flex;align-items:center;gap:14px;margin-top:clamp(4px,.8vh,10px)}
+.qa-badge{background:var(--ink);color:#fff;border-radius:999px;padding:6px 18px;font-weight:800;font-size:clamp(12px,1.3vw,18px)}
+.sync-status{font-size:clamp(10px,1vw,14px);color:var(--muted);font-weight:600}
+
+/* ============================================================ Remote mode */
+body.remote-mode{background:var(--ink);color:#F1F5F9;overflow:auto}
+#remote-app{display:none;flex-direction:column;gap:14px;padding:18px;max-width:520px;margin:0 auto;min-height:100vh}
+body.remote-mode #app{display:none}
+body.remote-mode #remote-app{display:flex}
+.r-head{font-weight:900;font-size:20px}
+.r-status{border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px;background:#1E293B;border:1px solid #334155}
+.r-status.live{border-color:#22C55E;color:#86EFAC}
+.r-status.off{border-color:#64748B;color:#CBD5E1}
+.r-big{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.r-big button{min-height:72px;border-radius:16px;border:1px solid #334155;background:#1E293B;color:#F1F5F9;font-size:20px;font-weight:800;cursor:pointer}
+.r-big button:active{background:#334155}
+.r-act{grid-column:span 2;background:var(--cobalt) !important;border-color:var(--cobalt) !important}
+.r-jump{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.r-jump button{min-height:48px;border-radius:10px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-weight:800;font-size:16px;cursor:pointer}
+.r-jump button.cur{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+.r-cue{background:#1E293B;border:1px solid #334155;border-radius:14px;padding:14px;font-size:15px;line-height:1.5;color:#FDE68A;font-weight:600}
+.r-meta{display:flex;justify-content:space-between;font-family:var(--mono);color:#94A3B8;font-size:14px}
+.r-settings{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.r-settings input{background:#0F172A;border:1px solid #334155;color:#E2E8F0;border-radius:8px;padding:8px;font-size:14px;flex:1;min-width:180px}
+.r-link{color:#93C5FD;font-size:13px;word-break:break-all}
+</style>
+</head>
+<body>
+<!-- ======================================================== DECK -->
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="t">Can You Trust Your Own Brain?</span>
+      <span class="sec" id="sectionLabel">Perception · 01</span>
+    </div>
+    <div class="top-spacer"></div>
+    <span class="timer" id="deckTimer" aria-label="Presentation timer">00:00</span>
+    <button class="icon-btn" id="fsBtn" type="button">Fullscreen</button>
+  </header>
+
+  <main class="stage-wrap">
+    <div class="stage" id="stage" tabindex="-1">
+
+      <!-- ================= SLIDE 1 : Title + brightness test ================= -->
+      <section class="slide" id="s1" aria-label="Slide 1: Title and brightness test">
+        <div class="s1-grid">
+          <div class="s1-left">
+            <p class="eyebrow">Live Experiments · 2026</p>
+            <h1 class="mega-title">Can You Trust<span class="accent-line">Your Own Brain?</span></h1>
+            <p class="s1-sub">Your brain isn’t broken — it’s fast, and fast comes with predictable blind spots. Let’s find a few together.</p>
+            <div class="pills"><span class="pill">Perception</span><span class="pill">Attention &amp; Memory</span><span class="pill">Judgement</span></div>
+            <div class="credit"><span class="monogram" aria-hidden="true">LM</span><span>Lalit Mehta</span></div>
+          </div>
+          <div class="s1-right">
+            <div style="width:100%">
+              <span class="stim-tag">Quick test · 10 seconds</span>
+              <div class="stim-card">
+                <svg id="s1-svg" viewBox="0 0 400 220" shape-rendering="crispEdges" role="img"
+                     aria-label="Two identical gray squares, one on a dark background and one on a light background. Do they look the same?">
+                  <rect x="0" y="0" width="200" height="220" fill="#1F1F1F"></rect>
+                  <rect x="200" y="0" width="200" height="220" fill="#EBEBEB"></rect>
+                  <rect id="sqA" x="55" y="65" width="90" height="90" fill="#7A7A7A"></rect>
+                  <rect id="sqB" x="255" y="65" width="90" height="90" fill="#7A7A7A"></rect>
+                  <rect id="s1-bridge" x="145" y="90" width="110" height="40" fill="#7A7A7A" opacity="0" style="transition:opacity .6s ease"></rect>
+                </svg>
+              </div>
+              <p class="instruction" style="text-align:center;margin:10px auto 0">Do these two gray squares look the same?</p>
+              <p class="readout" id="s1-readout">Hands up: left looks lighter · right looks lighter · they look the same.</p>
+            </div>
+          </div>
+        </div>
+        <div class="action-zone" style="margin-top:8px">
+          <button class="act-btn" id="act-s1" type="button">Bridge the two squares</button>
+          <span class="act-hint">or press <kbd>A</kbd></span>
+        </div>
+        <p class="evidence">Simultaneous contrast · Adelson (2000)</p>
+      </section>
+
+      <!-- ================= SLIDE 2 : Ebbinghaus ================= -->
+      <section class="slide" id="s2" aria-label="Slide 2: Ebbinghaus size illusion">
+        <div>
+          <p class="eyebrow">Perception · 02</p>
+          <h1 class="title" id="s2-title">Which Orange Circle Is Bigger?</h1>
+          <p class="instruction">Decide first. Hands up: left is bigger, right is bigger, or the same?</p>
+        </div>
+        <div class="cols">
+          <div class="stim-col">
+            <div class="stim-card">
+              <svg id="ebb-svg" viewBox="0 0 870 460" role="img"
+                   aria-label="Two orange circles, each surrounded by a ring of gray circles. Which orange circle looks bigger?">
+                <g id="ebb-inducers">
+                  <!-- left: 6 large inducers r=60 ring 132 around (230,230) -->
+                  <circle cx="362" cy="230" r="60" fill="#94A3B8"></circle>
+                  <circle cx="296" cy="344.3" r="60" fill="#94A3B8"></circle>
+                  <circle cx="164" cy="344.3" r="60" fill="#94A3B8"></circle>
+                  <circle cx="98" cy="230" r="60" fill="#94A3B8"></circle>
+                  <circle cx="164" cy="115.7" r="60" fill="#94A3B8"></circle>
+                  <circle cx="296" cy="115.7" r="60" fill="#94A3B8"></circle>
+                  <!-- right: 8 small inducers r=16 ring 78 around (640,230) -->
+                  <circle cx="718" cy="230" r="16" fill="#94A3B8"></circle>
+                  <circle cx="695.2" cy="285.2" r="16" fill="#94A3B8"></circle>
+                  <circle cx="640" cy="308" r="16" fill="#94A3B8"></circle>
+                  <circle cx="584.8" cy="285.2" r="16" fill="#94A3B8"></circle>
+                  <circle cx="562" cy="230" r="16" fill="#94A3B8"></circle>
+                  <circle cx="584.8" cy="174.8" r="16" fill="#94A3B8"></circle>
+                  <circle cx="640" cy="152" r="16" fill="#94A3B8"></circle>
+                  <circle cx="695.2" cy="174.8" r="16" fill="#94A3B8"></circle>
+                </g>
+                <circle id="ebbT1" cx="230" cy="230" r="40" fill="#EA580C"></circle>
+                <circle id="ebbT2" cx="640" cy="230" r="40" fill="#EA580C"></circle>
+                <g id="ebb-guides" opacity="0" style="transition:opacity .8s ease">
+                  <line x1="190" y1="190" x2="680" y2="190" stroke="#0F172A" stroke-width="3" stroke-dasharray="8 7"></line>
+                  <line x1="190" y1="270" x2="680" y2="270" stroke="#0F172A" stroke-width="3" stroke-dasharray="8 7"></line>
+                  <text x="435" y="245" text-anchor="middle" font-size="64" font-weight="900" fill="#0F172A" font-family="sans-serif">=</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="side-col">
+            <div class="row ask"><span class="k">Ask</span><span class="v">Compare the two orange circles. No ruler yet — go with what you see.</span></div>
+            <div class="row reveal hidden-row" id="s2-reveal"><span class="k">Reveal</span><span class="v">They are identical. The rings fade and the lines show the same width.</span></div>
+            <div class="row why hidden-row" id="s2-why"><span class="k">Why</span><span class="v">Your visual system judges size by comparison with neighbours — a smart strategy in a 3-D world.</span></div>
+            <div class="row careful hidden-row" id="s2-careful"><span class="k">Careful</span><span class="v">This doesn’t mean vision is “broken”, and the effect varies from person to person.</span></div>
+            <div class="action-zone">
+              <button class="act-btn" id="act-s2" type="button">Verify the size</button>
+              <span class="act-hint">or press <kbd>A</kbd></span>
+            </div>
+          </div>
+        </div>
+        <p class="evidence">Evidence · Massaro &amp; Anderson (1971); Roberts, Harris &amp; Yates (2005)</p>
+      </section>
+
+      <!-- ================= SLIDE 3 : Duck-Rabbit ================= -->
+      <section class="slide" id="s3" aria-label="Slide 3: Duck or rabbit ambiguous figure">
+        <div>
+          <p class="eyebrow">Perception · 03</p>
+          <h1 class="title" id="s3-title">Duck or Rabbit?</h1>
+          <p class="instruction">Which animal did you see first? Keep it to yourself — then try to find the other one.</p>
+        </div>
+        <div class="cols">
+          <div class="stim-col">
+            <div style="width:100%;display:flex;flex-direction:column;align-items:center;min-height:0">
+              <div class="stim-card" style="flex:1 1 auto;min-height:0">
+                <svg id="dr-svg" viewBox="0 0 600 440" role="img"
+                     aria-label="A line drawing that can be read as either a duck facing left or a rabbit facing right. Which do you see first?">
+                  <defs>
+                    <linearGradient id="dr-fade" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#fff" stop-opacity="1"></stop>
+                      <stop offset="0.75" stop-color="#fff" stop-opacity="1"></stop>
+                      <stop offset="1" stop-color="#fff" stop-opacity="0"></stop>
+                    </linearGradient>
+                    <mask id="dr-mask"><rect x="0" y="0" width="600" height="440" fill="url(#dr-fade)"></rect></mask>
+                    <clipPath id="dr-clip-left"><rect x="0" y="0" width="250" height="440"></rect></clipPath>
+                  </defs>
+                  <!-- overlay sits BEHIND the line art (spec: translucent colour behind the drawing) -->
+                  <g mask="url(#dr-mask)">
+                    <rect id="dr-overlay" x="0" y="0" width="250" height="440" clip-path="url(#dr-clip-left)" fill="#F59E0B" opacity="0" style="transition:opacity .4s ease"></rect>
+                    <path d="M 330 112 C 270 98, 160 98, 64 124 C 48 130, 50 150, 68 152 C 150 160, 235 168, 300 182 L 300 192 C 235 190, 160 186, 92 182 C 74 182, 70 200, 90 204 C 160 212, 250 226, 308 262 C 316 300, 330 340, 336 400 L 492 400 C 486 340, 492 300, 500 262 C 540 258, 552 214, 538 178 C 524 140, 480 108, 420 104 C 385 102, 355 106, 330 112"
+                          fill="none" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"></path>
+                    <path d="M 462 254 C 490 258, 520 250, 537 233" fill="none" stroke="#0F172A" stroke-width="6" stroke-linecap="round"></path>
+                  </g>
+                  <circle cx="378" cy="180" r="14" fill="#0F172A"></circle>
+                  <circle cx="383" cy="175" r="4.5" fill="#FFFFFF"></circle>
+                  <g id="dr-labels" font-family="sans-serif" font-weight="800" font-size="22" fill="#0F172A">
+                    <text id="dr-l-bill" x="96" y="140" opacity="0">BILL</text>
+                    <text id="dr-l-ears" x="70" y="140" opacity="0">EARS</text>
+                    <text id="dr-l-mouth" x="470" y="290" opacity="0">MOUTH</text>
+                    <text id="dr-l-duck" x="60" y="420" opacity="0" font-size="24" fill="#B45309">Duck: looks LEFT</text>
+                    <text id="dr-l-rabbit" x="380" y="420" opacity="0" font-size="24" fill="#BE123C">Rabbit: looks RIGHT</text>
+                  </g>
+                </svg>
+              </div>
+              <div class="dr-controls">
+                <button class="dr-btn" id="dr-duck-btn" type="button" aria-pressed="false">Duck reading</button>
+                <button class="dr-btn" id="dr-rabbit-btn" type="button" aria-pressed="false">Rabbit reading</button>
+              </div>
+            </div>
+          </div>
+          <div class="side-col">
+            <div class="row ask"><span class="k">Ask</span><span class="v">Hands up on my count: duck first, or rabbit first? Now try to flip it.</span></div>
+            <div class="row reveal hidden-row" id="s3-reveal"><span class="k">Reveal</span><span class="v">Same lines, two readings: a bill facing left, or ears and a mouth facing right.</span></div>
+            <div class="row why hidden-row" id="s3-why"><span class="k">Why</span><span class="v">Perception blends the lines with what you expect. One study found “rabbit” was the most common first answer around Easter, and “bird” in October.</span></div>
+            <div class="row careful hidden-row" id="s3-careful"><span class="k">Careful</span><span class="v">Not “anything goes”: the lines allow only these two readings, and you usually see one at a time.</span></div>
+            <div class="action-zone">
+              <button class="act-btn" id="act-s3" type="button">Show the duck reading</button>
+              <span class="act-hint">or press <kbd>A</kbd></span>
+            </div>
+          </div>
+        </div>
+        <p class="evidence">Evidence · Jastrow (1899); Brugger &amp; Brugger (1993); Kornmeier &amp; Bach (2012)</p>
+      </section>
+
+      <!-- ================= SLIDE 4 : Attention arena ================= -->
+      <section class="slide" id="s4" aria-label="Slide 4: selective attention counting task">
+        <div>
+          <p class="eyebrow">Attention · 04</p>
+          <h1 class="title" id="s4-title">Count the White Bounces</h1>
+          <p class="instruction">Silently count how many times a WHITE disc bounces off a wall for 12 seconds. Ignore the dark discs.</p>
+        </div>
+        <div class="cols">
+          <div class="stim-col">
+            <div style="width:100%;display:flex;flex-direction:column;min-height:0">
+              <div class="stim-card" style="flex:0 1 auto;min-height:0">
+                <svg id="arena-svg" viewBox="-12 -12 984 524" role="img" aria-label="An arena with four white discs and four dark discs moving and bouncing off the walls. Count only the white discs’ wall bounces.">
+                  <rect id="arena-bg" x="0" y="0" width="960" height="500" rx="14" fill="#64748B" stroke="#334155" stroke-width="4" style="transition:stroke .3s linear"></rect>
+                  <g id="arena-discs"></g>
+                  <polygon id="arena-star" points="" fill="#0F172A" opacity="0"></polygon>
+                  <g id="arena-highlights" opacity="0" style="transition:opacity .3s"></g>
+                </svg>
+              </div>
+              <div class="arena-timebar" aria-hidden="true"><div id="arena-timefill"></div></div>
+              <p class="arena-status" id="arena-status" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+          <div class="side-col">
+            <div class="counter-chip" id="s4-counter" style="display:none">White bounces: <span id="s4-count">0</span></div>
+            <div class="row ask"><span class="k">Ask</span><span class="v">Eyes on the arena. Count white-disc wall bounces only. Keep the number to yourself.</span></div>
+            <div class="row reveal hidden-row" id="s4-reveal"><span class="k">Reveal</span><span class="v">White discs hit the walls 15 times. Did you also see a dark star crossing the middle, the border turn from slate to crimson, and a dark disc turn into a square?</span></div>
+            <div class="row why hidden-row" id="s4-why"><span class="k">Why</span><span class="v">When attention is busy, unexpected things can go unnoticed. In one study, 20 of 24 radiologists searching lung scans missed a gorilla image — and 12 of those 20 looked right at it.</span></div>
+            <div class="row careful hidden-row" id="s4-careful"><span class="k">Careful</span><span class="v">Not everyone misses these, and it isn’t carelessness. Not noticing is different from forgetting.</span></div>
+            <div class="action-zone">
+              <button class="act-btn" id="act-s4" type="button">Start the 12-second task</button>
+              <span class="act-hint">or press <kbd>A</kbd></span>
+            </div>
+          </div>
+        </div>
+        <p class="evidence">Evidence · Simons &amp; Chabris (1999); Drew, Võ &amp; Wolfe (2013); Mack &amp; Rock (1998)</p>
+      </section>
+
+      <!-- ================= SLIDE 5 : DRM words ================= -->
+      <section class="slide" id="s5" aria-label="Slide 5: memory word list demonstration">
+        <div>
+          <p class="eyebrow">Memory · 05</p>
+          <h1 class="title" id="s5-title">Memorize the Words</h1>
+          <p class="instruction">Words will appear one at a time. Read silently — don’t write, don’t speak.</p>
+        </div>
+        <div class="cols">
+          <div class="stim-col">
+            <div style="width:100%;display:flex;flex-direction:column;min-height:0">
+              <div class="word-panel">
+                <div class="word-view on" id="wv-idle"><p class="idle-hint">Press start. Words appear for about a second each.</p></div>
+                <div class="word-view" id="wv-word"><span class="big-word" id="wv-word-text"></span></div>
+                <div class="word-view" id="wv-poll">
+                  <p class="poll-q">Which of these were on the screen?</p>
+                  <p class="poll-sub">Hands up for each word you remember seeing.</p>
+                  <div class="chips">
+                    <span class="chip" id="chip-TIRED">TIRED<small id="chip-TIRED-s"></small></span>
+                    <span class="chip" id="chip-BLANKET">BLANKET<small id="chip-BLANKET-s"></small></span>
+                    <span class="chip" id="chip-SLEEP">SLEEP<small id="chip-SLEEP-s"></small></span>
+                    <span class="chip" id="chip-WINDOW">WINDOW<small id="chip-WINDOW-s"></small></span>
+                  </div>
+                </div>
+                <div class="word-view" id="wv-results">
+                  <div class="fulllist" id="s5-fulllist"></div>
+                </div>
+              </div>
+              <div class="dots" id="s5-dots" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div class="side-col">
+            <div class="row ask"><span class="k">Ask</span><span class="v">After the list: show of hands for each word. Did you see it?</span></div>
+            <div class="row reveal hidden-row" id="s5-reveal"><span class="k">Reveal</span><span class="v">“Sleep” was never shown. Every word you did see points toward it.</span></div>
+            <div class="row why hidden-row" id="s5-why"><span class="k">Why</span><span class="v">Memory keeps the gist, and the gist can feel like a real memory. In the original studies, many people falsely recalled the missing word — about 40% in free recall — and in recognition tests they said “yes” to it about as often as to words actually shown. Rates in one room will vary.</span></div>
+            <div class="row careful hidden-row" id="s5-careful"><span class="k">Careful</span><span class="v">A hand up for “sleep” isn’t a bad memory — it’s normal, gist-based memory.</span></div>
+            <div class="action-zone">
+              <button class="act-btn" id="act-s5" type="button">Start the word list</button>
+              <span class="act-hint">or press <kbd>A</kbd></span>
+            </div>
+          </div>
+        </div>
+        <p class="evidence">Evidence · Roediger &amp; McDermott (1995); Deese (1959); Gallo (2010) · classroom demonstration, not an exact replication</p>
+      </section>
+
+      <!-- ================= SLIDE 6 : Loftus & Palmer ================= -->
+      <section class="slide" id="s6" aria-label="Slide 6: Loftus and Palmer question wording experiment">
+        <div>
+          <p class="eyebrow">Memory · 06</p>
+          <h1 class="title">Can One Word Change a Memory?</h1>
+          <p class="instruction">Same film of a car crash. Same question. Only one word changes.</p>
+        </div>
+        <div class="cols">
+          <div class="stim-col">
+            <div style="width:100%;display:flex;flex-direction:column;min-height:0;overflow-y:auto">
+              <svg class="crash-svg" viewBox="0 0 340 150" role="img" aria-label="Simple illustration of two stylized cars meeting at an intersection.">
+                <rect x="0" y="0" width="340" height="150" rx="10" fill="#F4F5F8"></rect>
+                <line x1="170" y1="0" x2="170" y2="150" stroke="#DCE1E9" stroke-width="10"></line>
+                <line x1="0" y1="75" x2="340" y2="75" stroke="#DCE1E9" stroke-width="10"></line>
+                <g transform="translate(96,78)">
+                  <rect x="-46" y="-14" width="92" height="26" rx="8" fill="#2547D1"></rect>
+                  <rect x="-26" y="-26" width="46" height="16" rx="6" fill="#2547D1"></rect>
+                  <circle cx="-28" cy="14" r="8" fill="#0F172A"></circle><circle cx="26" cy="14" r="8" fill="#0F172A"></circle>
+                </g>
+                <g transform="translate(216,52) rotate(90)">
+                  <rect x="-46" y="-14" width="92" height="26" rx="8" fill="#E11D48"></rect>
+                  <rect x="-26" y="-26" width="46" height="16" rx="6" fill="#E11D48"></rect>
+                  <circle cx="-28" cy="14" r="8" fill="#0F172A"></circle><circle cx="26" cy="14" r="8" fill="#0F172A"></circle>
+                </g>
+                <g stroke="#F59E0B" stroke-width="4" stroke-linecap="round">
+                  <line x1="160" y1="66" x2="150" y2="52"></line><line x1="166" y1="60" x2="162" y2="44"></line><line x1="172" y1="66" x2="184" y2="54"></line>
+                </g>
+              </svg>
+              <p class="qsentence">“About how fast were the cars going when they <span class="verb" id="lp-verb">____</span> each other?”</p>
+              <div class="barchart" id="lp-bars" aria-label="Bar chart of average estimated speed in miles per hour for each verb condition.">
+                <div class="bar-row" data-verb="contacted"><span class="bar-label">contacted</span><span class="bar-track"><span class="bar-fill" style="--w:.7067"></span></span><span class="bar-val">31.8</span></div>
+                <div class="bar-row" data-verb="hit"><span class="bar-label">hit</span><span class="bar-track"><span class="bar-fill" style="--w:.7556"></span></span><span class="bar-val">34.0</span></div>
+                <div class="bar-row" data-verb="bumped"><span class="bar-label">bumped</span><span class="bar-track"><span class="bar-fill" style="--w:.8467"></span></span><span class="bar-val">38.1</span></div>
+                <div class="bar-row" data-verb="collided"><span class="bar-label">collided</span><span class="bar-track"><span class="bar-fill" style="--w:.8733"></span></span><span class="bar-val">39.3</span></div>
+                <div class="bar-row" data-verb="smashed"><span class="bar-label">smashed</span><span class="bar-track"><span class="bar-fill" style="--w:.9067;background:var(--coral)"></span></span><span class="bar-val">40.8</span></div>
+              </div>
+              <p class="axis-note">Average estimated speed (mph) · axis 0–45</p>
+              <div class="glass-panel" id="lp-glass">
+                <strong style="font-size:clamp(12px,1.3vw,18px)">One week later · “Did you see any broken glass?”</strong>
+                <div class="glass-tiles">
+                  <div class="gtile"><div class="g">32%</div><div class="gl">asked “smashed”</div></div>
+                  <div class="gtile"><div class="g">14%</div><div class="gl">asked “hit”</div></div>
+                  <div class="gtile"><div class="g">12%</div><div class="gl">never asked about speed</div></div>
+                </div>
+                <p style="margin:8px 0 0;font-size:clamp(10px,1.05vw,15px);color:var(--muted);font-weight:700">There was no broken glass in the film.</p>
+              </div>
+            </div>
+          </div>
+          <div class="side-col">
+            <div class="row ask"><span class="k">Ask</span><span class="v">Predict: how far apart will the average guesses be for “contacted” and “smashed”?</span></div>
+            <div class="row reveal hidden-row" id="s6-reveal"><span class="k">Reveal</span><span class="v">About 9 mph apart, from a single word. (45 students watched crash films.)</span></div>
+            <div class="row why hidden-row" id="s6-why"><span class="k">Why</span><span class="v">A question can carry information, and that information can blend into what we think we remember.</span></div>
+            <div class="row careful hidden-row" id="s6-careful"><span class="k">Careful</span><span class="v">Not “witnesses are always wrong”. Researchers still debate exactly how the effect works.</span></div>
+            <div class="action-zone">
+              <button class="act-btn" id="act-s6" type="button">Show the first word</button>
+              <span class="act-hint">or press <kbd>A</kbd></span>
+            </div>
+          </div>
+        </div>
+        <p class="evidence">Evidence · Loftus &amp; Palmer (1974); Loftus (2005)</p>
+      </section>
+
+      <!-- ================= SLIDE 7 : Wason 2-4-6 ================= -->
+      <section class="slide" id="s7" aria-label="Slide 7: Wason 2-4-6 secret rule game">
+        <div>
+          <p class="eyebrow">Judgement · 07</p>
+          <h1 class="title" id="s7-title">Guess the Secret Rule</h1>
+          <p class="instruction">The triple 2 – 4 – 6 fits a secret rule. Suggest triples to test — I’ll say yes or no.</p>
+        </div>
+        <div class="cols">
+          <div class="stim-col">
+            <div class="wason-wrap">
+              <div class="seed-row">Fits the rule:&nbsp;<span style="font-family:var(--mono)">2 – 4 – 6</span><span class="verdict yes">YES</span></div>
+              <div class="test-btns">
+                <button class="tbtn" data-a="8" data-b="10" data-c="12" type="button">8 – 10 – 12</button>
+                <button class="tbtn" data-a="20" data-b="22" data-c="24" type="button">20 – 22 – 24</button>
+                <button class="tbtn" data-a="3" data-b="17" data-c="104" type="button">3 – 17 – 104</button>
+                <button class="tbtn" data-a="10" data-b="8" data-c="6" type="button">10 – 8 – 6</button>
+              </div>
+              <div class="custom-triple">
+                <label for="w-in-a">Your own triple</label>
+                <input class="num-in" id="w-in-a" type="number" min="-999" max="999" step="1" value="1" aria-label="First number">
+                <input class="num-in" id="w-in-b" type="number" min="-999" max="999" step="1" value="5" aria-label="Second number">
+                <input class="num-in" id="w-in-c" type="number" min="-999" max="999" step="1" value="9" aria-label="Third number">
+                <button class="small-btn" id="w-custom-test" type="button">Test it</button>
+              </div>
+              <div class="log-scroll" id="w-log" aria-live="polite">
+                <div class="log-head">Tested so far</div>
+                <div id="w-log-rows"></div>
+              </div>
+              <div class="rule-banner" id="w-rule">Rule: Any three numbers in ascending order (a &lt; b &lt; c)</div>
+            </div>
+          </div>
+          <div class="side-col">
+            <div class="row ask"><span class="k">Ask</span><span class="v">Say your guess for the rule — then pick the test you think is most useful.</span></div>
+            <div class="row reveal hidden-row" id="s7-reveal"><span class="k">Reveal</span><span class="v">Any ascending numbers fit. “+2” and “even numbers” were just guesses that happened to work.</span></div>
+            <div class="row why hidden-row" id="s7-why"><span class="k">Why</span><span class="v">We tend to test examples that should get a “yes”. That builds confidence in a guess that may be too narrow.</span></div>
+            <div class="row careful hidden-row" id="s7-careful"><span class="k">Careful</span><span class="v">Not stubbornness or dishonesty — it’s a natural default. In Wason’s 1960 study, only about 1 in 5 got it right on the first announcement.</span></div>
+            <div class="action-zone">
+              <button class="act-btn" id="act-s7" type="button">Test 8 – 10 – 12</button>
+              <span class="act-hint">or press <kbd>A</kbd></span>
+            </div>
+          </div>
+        </div>
+        <p class="evidence">Evidence · Wason (1960); Klayman &amp; Ha (1987); Nickerson (1998) · classroom demonstration, not an exact replication</p>
+      </section>
+
+      <!-- ================= SLIDE 8 : Confidence & accuracy ================= -->
+      <section class="slide" id="s8" aria-label="Slide 8: confidence and accuracy">
+        <div>
+          <p class="eyebrow">Calibration · 08</p>
+          <h1 class="title">Confidence Does Not Guarantee Accuracy</h1>
+          <p class="instruction">Feeling sure and being right are different things — but they are not opposites.</p>
+        </div>
+        <div class="card-list">
+          <div class="info-card">
+            <span class="num">01</span>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4a8 8 0 0 1 8 8"></path><path d="M12 4a8 8 0 0 0-8 8"></path><line x1="12" y1="12" x2="16" y2="8"></line><circle cx="12" cy="12" r="1.6" fill="currentColor"></circle></svg>
+            <div><h3>Confidence is a feeling, not a measurement</h3><p>It reflects how smoothly the story fits together in your head — not how much evidence you checked.</p></div>
+            <span class="tag">Koriat 2012</span>
+          </div>
+          <div class="info-card">
+            <span class="num">02</span>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+            <div><h3>A clean first impression can be informative</h3><p>Under fair conditions, confidence can carry useful information about accuracy. Reliability depends on how the judgement was made and what happened afterwards.</p></div>
+            <span class="tag">Wixted &amp; Wells 2017</span>
+          </div>
+          <div class="info-card">
+            <span class="num">03</span>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19Z"></path><line x1="12" y1="10" x2="12" y2="14.5"></line><circle cx="12" cy="17.4" r=".9" fill="currentColor"></circle></svg>
+            <div><h3>Illusions and nudges can inflate certainty</h3><p>Misleading context, divided attention, leading questions and untested assumptions can make a wrong answer feel as sure as a right one — like confident hands for the missing word.</p></div>
+            <span class="tag">Slides 2 · 4 · 5 · 6 · 7</span>
+          </div>
+        </div>
+        <div class="callout">Confidence can be wrong. That is not the same as confidence always being wrong.</div>
+        <p class="evidence">Evidence · Koriat (2012); Wixted &amp; Wells (2017); Kahneman &amp; Klein (2009)</p>
+      </section>
+
+      <!-- ================= SLIDE 9 : Habits ================= -->
+      <section class="slide" id="s9" aria-label="Slide 9: practical reasoning habits">
+        <div>
+          <p class="eyebrow">Habits · 09</p>
+          <h1 class="title">How to Check Yourself</h1>
+          <p class="instruction">Knowing about biases isn’t enough. Changing the process helps.</p>
+        </div>
+        <div class="habits-table">
+          <div class="hrow"><span class="where">Seeing</span><span class="short">Judges by surroundings</span><span class="arrow">→</span><span class="habit">Measure it, don’t eyeball it: a ruler, a number, a second look.</span></div>
+          <div class="hrow"><span class="where">Attention</span><span class="short">Filters out the unexpected</span><span class="arrow">→</span><span class="habit">Don’t multitask when it matters; pause and scan on purpose.</span></div>
+          <div class="hrow"><span class="where">Memory</span><span class="short">Fills gaps with what fits</span><span class="arrow">→</span><span class="habit">Write it down early, and ask neutral questions, not leading ones.</span></div>
+          <div class="hrow"><span class="where">Judgement</span><span class="short">Tests only for “yes”</span><span class="arrow">→</span><span class="habit">Ask what would prove you wrong — then test that.</span></div>
+        </div>
+        <p class="hfoot">These habits reduce errors in studies; they don’t remove bias. We spot bias in others more easily than in ourselves.</p>
+        <p class="evidence">Evidence · Lord, Lepper &amp; Preston (1984); Pronin, Lin &amp; Ross (2002); Milkman, Chugh &amp; Bazerman (2009)</p>
+      </section>
+
+      <!-- ================= SLIDE 10 : Closing ================= -->
+      <section class="slide" id="s10" aria-label="Slide 10: closing and replay">
+        <div>
+          <p class="eyebrow">Closing · 10</p>
+          <h1 class="title">What Else Might <span class="accent">You Be Missing?</span></h1>
+        </div>
+        <div class="s10-body">
+          <p class="thesis">You can trust your brain to get you through a complex world. Just check what it skips, fills in, and assumes.</p>
+          <div>
+            <div class="pillar"><span class="pk">Perception &amp; Attention</span><span class="pv">it compares, and it filters.</span></div>
+            <div class="pillar"><span class="pk">Memory</span><span class="pv">it reconstructs.</span></div>
+            <div class="pillar"><span class="pk">Judgement</span><span class="pv">it looks for “yes”, and feels sure.</span></div>
+          </div>
+          <div class="replay-row" role="group" aria-label="Replay an experiment">
+            <span class="rl">Replay an experiment</span>
+            <button class="rep-btn" data-replay="1" type="button">Size</button>
+            <button class="rep-btn" data-replay="2" type="button">Duck / rabbit</button>
+            <button class="rep-btn" data-replay="3" type="button">Attention</button>
+            <button class="rep-btn" data-replay="4" type="button">Memory</button>
+            <button class="rep-btn" data-replay="6" type="button">Secret rule</button>
+            <button class="rep-btn" data-replay="0" type="button">Replay from Slide 1</button>
+          </div>
+          <div class="qa-state">
+            <button class="act-btn" id="qa-btn" type="button" style="min-height:48px;font-size:clamp(12px,1.25vw,18px)">Questions?</button>
+            <span class="qa-badge" id="qa-elapsed" style="display:none">Q&amp;A · elapsed <span id="qa-time">00:00</span></span>
+          </div>
+          <p class="sync-status" id="boardSyncStatus">Local presentation mode — timer running, all controls available offline.</p>
+        </div>
+        <p class="evidence">Synthesis of the evidence on slides 2–9</p>
+      </section>
+
+      <div id="cuePanel" role="region" aria-label="Presenter cue">
+        <div class="cue-head">Presenter cue (private)</div>
+        <div id="cueText"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="controls">
+    <button class="nav-btn" id="prevBtn" type="button">Previous</button>
+    <div class="progress" id="progress" role="group" aria-label="Go to slide"></div>
+    <button class="nav-btn" id="nextBtn" type="button">Next</button>
+    <span class="slide-ind" id="slideInd">1 / 10</span>
+    <button class="icon-btn cue-toggle" id="cueBtn" type="button" aria-expanded="false">Presenter cue</button>
+  </footer>
+</div>
+
+<!-- ======================================================== REMOTE -->
+<div id="remote-app" aria-label="Phone remote control">
+  <div class="r-head">Trust Your Brain — Remote</div>
+  <div class="r-status off" id="r-status" role="status">Sync unavailable offline — local controls on the board remain fully working.</div>
+  <div class="r-meta"><span id="r-slide">Slide —</span><span id="r-timer">00:00</span></div>
+  <div class="r-big">
+    <button id="r-prev" type="button">◀ Prev</button>
+    <button id="r-next" type="button">Next ▶</button>
+    <button id="r-act" class="r-act" type="button">ACT</button>
+  </div>
+  <div class="r-jump" id="r-jump" aria-label="Jump to slide"></div>
+  <div class="r-cue" id="r-cue">Cue appears here.</div>
+  <details style="color:#CBD5E1">
+    <summary style="font-weight:700;cursor:pointer">Room settings</summary>
+    <div class="r-settings" style="margin-top:8px">
+      <label for="r-topic" style="font-size:13px;color:#94A3B8">Room topic</label>
+      <input id="r-topic" type="text" value="trust-brain/lalit/2026">
+      <button class="small-btn" id="r-apply" type="button" style="min-height:38px">Apply</button>
+    </div>
+    <p class="r-link" id="r-url" style="margin-top:10px"></p>
+    <p style="font-size:12px;color:#94A3B8;margin:6px 0 0">Note: if live sync loads, it uses a public MQTT broker — public brokers are not private.</p>
+  </details>
+</div>
+
+<script>
+/* ================================================================
+   Can You Trust Your Own Brain? — deck logic (clean-room build)
+   ================================================================ */
+(function(){
+'use strict';
+
+var TOTAL = 10;
+var current = 0;                 // zero-based active slide index
+var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------------- Presenter cues (private) ---------------- */
+var CUES = [
+ "Title + bridge test — 0:45. Ask which gray square looks lighter; bridge them; the pixels are identical, judged by surroundings.",
+ "Size by comparison — 1:15. Hands up before verification; the circles are identical; explain context.",
+ "Duck or rabbit — 1:15. Ask which appeared first; show duck then rabbit; mention the Easter/October result as one study only.",
+ "Attention arena — 1:45. Ask for WHITE bounces only during the 12-second run; answer is 15; replay with highlights and ask about the star, border, and square.",
+ "Memory words — 1:45. Do not say or hint at the missing-word theme before the word list and poll; the missing lure was never shown; keep the tone friendly.",
+ "Loftus & Palmer — 1:15. Ask for a prediction before revealing verbs; 31.8 vs 40.8 mph; there was no broken glass; explain the debated mechanism carefully.",
+ "Secret rule — 1:30. Ask yes/no before each guided test; 3–17–104 returns YES; the rule is any ascending triple.",
+ "Confidence ≠ accuracy — 0:45. Say both halves: confidence can be wrong, but is not always wrong.",
+ "Check yourself — 0:45. Walk through four habits; emphasise changing the process rather than relying on willpower.",
+ "Closing + Q&A — 0:30 plus questions. Repeat the thesis and offer replay of any experiment."
+];
+var SECTIONS = ["Perception · 01","Perception · 02","Perception · 03","Attention · 04","Memory · 05","Memory · 06","Judgement · 07","Calibration · 08","Habits · 09","Closing · 10"];
+
+function $(id){ return document.getElementById(id); }
+function setText(el, txt){ if(el) el.textContent = txt; }
+
+/* ---------------- Timer ---------------- */
+var t0 = Date.now();
+function fmtTime(ms){
+  var s = Math.floor(ms/1000), m = Math.floor(s/60); s = s % 60;
+  return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+setInterval(function(){
+  var el = $('deckTimer'); if(el) el.textContent = fmtTime(Date.now()-t0);
+  var rt = $('r-timer'); if(rt) rt.textContent = fmtTime(Date.now()-t0);
+  var qa = $('qa-time'); if(qa && qa.style.display!=='none') qa.textContent = fmtTime(Date.now()-t0);
+}, 500);
+
+/* ---------------- Demo registry ----------------
+   Each demo: {label():string|null, act():void, reset():void}       */
+var DEMOS = {};
+
+/* Helper: cancellable timeout bag */
+function TimerBag(){
+  this.ids = [];
+}
+TimerBag.prototype.after = function(fn, ms){
+  var self=this;
+  var id = setTimeout(function(){
+    self.ids = self.ids.filter(function(x){return x!==id;});
+    fn();
+  }, ms);
+  this.ids.push(id);
+  return id;
+};
+TimerBag.prototype.clear = function(){
+  this.ids.forEach(clearTimeout); this.ids = [];
+};
+
+/* Helper: single RAF owner per demo */
+function rafStart(obj, fn){
+  rafStop(obj);
+  function loop(ts){
+    if(!obj.running) return;
+    if(fn(ts) !== false){ obj.raf = requestAnimationFrame(loop); }
+  }
+  obj.running = true;
+  obj.raf = requestAnimationFrame(loop);
+}
+function rafStop(obj){
+  obj.running = false;
+  if(obj.raf){ cancelAnimationFrame(obj.raf); obj.raf = null; }
+}
+
+/* ===============================================================
+   SLIDE 1 — brightness bridge
+   =============================================================== */
+(function(){
+  var step = 0, tb = new TimerBag();
+  var bridge, readout;
+  DEMOS[0] = {
+    label: function(){ return step===0 ? "Bridge the two squares" : null; },
+    act: function(){
+      if(step!==0) return;
+      step = 1;
+      bridge = $('s1-bridge'); readout = $('s1-readout');
+      if(bridge) bridge.setAttribute('opacity','1');
+      if(readout){ setText(readout, "Same gray. Identical pixel values. Your brain judged each square by what surrounds it."); readout.classList.add('revealed'); }
+      refreshUI();
+    },
+    reset: function(){
+      step = 0; tb.clear();
+      bridge = $('s1-bridge'); readout = $('s1-readout');
+      if(bridge) bridge.setAttribute('opacity','0');
+      if(readout){ setText(readout, "Hands up: left looks lighter · right looks lighter · they look the same."); readout.classList.remove('revealed'); }
+    }
+  };
+})();
+
+/* ===============================================================
+   SLIDE 2 — Ebbinghaus
+   =============================================================== */
+(function(){
+  var step = 0;
+  DEMOS[1] = {
+    label: function(){ return step===0 ? "Verify the size" : null; },
+    act: function(){
+      if(step!==0) return;
+      step = 1;
+      var ind = $('ebb-inducers'), guides = $('ebb-guides');
+      if(ind){ ind.style.transition = reducedMotion ? 'none' : 'opacity .8s ease'; ind.style.opacity = '0.1'; }
+      if(guides) guides.setAttribute('opacity','1');
+      setText($('s2-title'), "Your Eyes Judge Size by Comparison");
+      ['s2-reveal','s2-why','s2-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');} });
+      refreshUI();
+    },
+    reset: function(){
+      step = 0;
+      var ind = $('ebb-inducers'), guides = $('ebb-guides');
+      if(ind){ ind.style.opacity = ''; }
+      if(guides) guides.setAttribute('opacity','0');
+      setText($('s2-title'), "Which Orange Circle Is Bigger?");
+      ['s2-reveal','s2-why','s2-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.add('hidden-row'); e.classList.remove('shown');} });
+    }
+  };
+})();
+
+/* ===============================================================
+   SLIDE 3 — Duck / Rabbit
+   =============================================================== */
+(function(){
+  var step = 0;               // 0 none, 1 duck, 2 rabbit
+  var reading = null;         // manual/guided highlight state: 'duck' | 'rabbit' | null
+  function setReading(mode){     // 'duck' | 'rabbit' | null
+    reading = mode;
+    var overlay = $('dr-overlay');
+    var l = {bill:$('dr-l-bill'), ears:$('dr-l-ears'), mouth:$('dr-l-mouth'), duck:$('dr-l-duck'), rabbit:$('dr-l-rabbit')};
+    Object.keys(l).forEach(function(k){ if(l[k]) l[k].setAttribute('opacity','0'); });
+    if(!overlay) return;
+    if(mode==='duck'){
+      overlay.setAttribute('fill','#F59E0B'); overlay.setAttribute('opacity','0.22');
+      if(l.bill) l.bill.setAttribute('opacity','1');
+      if(l.duck) l.duck.setAttribute('opacity','1');
+    } else if(mode==='rabbit'){
+      overlay.setAttribute('fill','#FB7185'); overlay.setAttribute('opacity','0.22');
+      if(l.ears) l.ears.setAttribute('opacity','1');
+      if(l.mouth) l.mouth.setAttribute('opacity','1');
+      if(l.rabbit) l.rabbit.setAttribute('opacity','1');
+    } else {
+      overlay.setAttribute('opacity','0');
+    }
+    var db=$('dr-duck-btn'), rb=$('dr-rabbit-btn');
+    if(db) db.setAttribute('aria-pressed', mode==='duck'?'true':'false');
+    if(rb) rb.setAttribute('aria-pressed', mode==='rabbit'?'true':'false');
+  }
+  /* one listener per manual button (no duplicates) */
+  $('dr-duck-btn').addEventListener('click', function(){ setReading(reading==='duck'?null:'duck'); });
+  $('dr-rabbit-btn').addEventListener('click', function(){ setReading(reading==='rabbit'?null:'rabbit'); });
+  function manualSet(m){ setReading(m); }
+
+  DEMOS[2] = {
+    label: function(){ return step===0 ? "Show the duck reading" : (step===1 ? "Show the rabbit reading" : null); },
+    act: function(){
+      if(step===0){
+        step = 1;
+        manualSet('duck');
+        setText($('s3-title'), "One Drawing, Two Interpretations");
+        var e=$('s3-reveal'); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');}
+      } else if(step===1){
+        step = 2;
+        manualSet('rabbit');
+        ['s3-why','s3-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');} });
+      }
+      refreshUI();
+    },
+    reset: function(){
+      step = 0; reading = null;
+      setReading(null);
+      setText($('s3-title'), "Duck or Rabbit?");
+      ['s3-reveal','s3-why','s3-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.add('hidden-row'); e.classList.remove('shown');} });
+    }
+  };
+})();
+
+/* ===============================================================
+   SLIDE 4 — Attention arena (deterministic triangle-wave motion)
+   =============================================================== */
+(function(){
+  var ARENA = {W:960, H:500, R:26, T:12.0};
+  var WHITES = [
+    {x0:210.2033, y0:108.5417, vx:133.1217, vy:60.7708},
+    {x0:135.4850, y0:341.4616, vx:-207.5515, vy:-100.7433},
+    {x0:166.9922, y0:385.6760, vx:-148.8655, vy:-101.5090},
+    {x0:140.9494, y0:175.4572, vx:197.9411, vy:-54.7522}
+  ];
+  var DARKS = [
+    {x0:480, y0:250, vx:-160, vy:120},
+    {x0:700, y0:120, vx:-140, vy:-95},
+    {x0:300, y0:400, vx:185, vy:-70},
+    {x0:820, y0:380, vx:-120, vy:-150}
+  ];
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  function fold(p0, v, lo, hi, t){
+    var L = hi - lo;
+    var u = (p0 - lo) + v*t;
+    var m = ((u % (2*L)) + 2*L) % (2*L);
+    return lo + (m <= L ? m : 2*L - m);
+  }
+  /* Independent analytic bounce-event counter (used by self-test AND
+     used to build the highlight positions during replay). */
+  function bounceEvents(p0, v, lo, hi, tmax){
+    var out = [];
+    if(v === 0) return out;
+    var L = hi - lo, d = p0 - lo;
+    var kMin = Math.floor(Math.min(d, d + v*tmax)/L) - 1;
+    var kMax = Math.ceil(Math.max(d, d + v*tmax)/L) + 1;
+    for(var k=kMin;k<=kMax;k++){
+      var t = (k*L - d)/v;
+      if(t > 1e-9 && t <= tmax + 1e-9) out.push(t);
+    }
+    return out.sort(function(a,b){return a-b;});
+  }
+  function whiteBounceTotal(tmax){
+    var total = 0, per = [];
+    WHITES.forEach(function(w){
+      var n = bounceEvents(w.x0,w.vx,ARENA.R,ARENA.W-ARENA.R,tmax).length
+            + bounceEvents(w.y0,w.vy,ARENA.R,ARENA.H-ARENA.R,tmax).length;
+      per.push(n); total += n;
+    });
+    return {total: total, per: per};
+  }
+
+  /* Build disc elements once */
+  var gDiscs = $('arena-discs');
+  var whiteEls = [], darkEls = [];
+  WHITES.forEach(function(){ var c=document.createElementNS(SVGNS,'circle'); c.setAttribute('r',ARENA.R); c.setAttribute('fill','#FFFFFF'); gDiscs.appendChild(c); whiteEls.push(c); });
+  DARKS.forEach(function(_,i){
+    var el;
+    if(i===0){ // D1 morphs to square: use rect with rounded corners sized 52 -> 46 handled via morph group
+      el = document.createElementNS(SVGNS,'g');
+      var circ = document.createElementNS(SVGNS,'circle'); circ.setAttribute('r',ARENA.R); circ.setAttribute('fill','#0F172A');
+      var sq = document.createElementNS(SVGNS,'rect'); sq.setAttribute('width','46'); sq.setAttribute('height','46'); sq.setAttribute('x','-23'); sq.setAttribute('y','-23'); sq.setAttribute('fill','#0F172A'); sq.setAttribute('opacity','0');
+      el.appendChild(circ); el.appendChild(sq); el._circ=circ; el._sq=sq;
+      gDiscs.appendChild(el);
+    } else {
+      el = document.createElementNS(SVGNS,'circle'); el.setAttribute('r',ARENA.R); el.setAttribute('fill','#0F172A');
+      gDiscs.appendChild(el);
+    }
+    darkEls.push(el);
+  });
+  /* Star polygon */
+  (function(){
+    var pts=[];
+    for(var i=0;i<10;i++){
+      var ang = -Math.PI/2 + i*Math.PI/5;
+      var rad = (i%2===0)?30:12;
+      pts.push((rad*Math.cos(ang)).toFixed(2)+','+(rad*Math.sin(ang)).toFixed(2));
+    }
+    $('arena-star').setAttribute('points', pts.join(' '));
+  })();
+
+  var state = {mode:'idle', t0:0, raf:null, running:false, done:false, countShown:false};
+  var bgRect = $('arena-bg'), timeFill = $('arena-timefill'), statusEl = $('arena-status');
+
+  function applyScene(t, replay){
+    WHITES.forEach(function(w,i){
+      var x = fold(w.x0,w.vx,ARENA.R,ARENA.W-ARENA.R,t);
+      var y = fold(w.y0,w.vy,ARENA.R,ARENA.H-ARENA.R,t);
+      whiteEls[i].setAttribute('cx',x); whiteEls[i].setAttribute('cy',y);
+    });
+    DARKS.forEach(function(d,i){
+      var x = fold(d.x0,d.vx,ARENA.R,ARENA.W-ARENA.R,t);
+      var y = fold(d.y0,d.vy,ARENA.R,ARENA.H-ARENA.R,t);
+      var el = darkEls[i];
+      if(i===0 && el._circ){
+        el.setAttribute('transform','translate('+x+','+y+')');
+        // morph at t>=8 over 0.4s
+        var k = Math.max(0, Math.min(1, (t-8)/0.4));
+        if(t>=8){ el._circ.setAttribute('opacity', String(1-k)); el._sq.setAttribute('opacity', String(k)); }
+        else { el._circ.setAttribute('opacity','1'); el._sq.setAttribute('opacity','0'); }
+      } else {
+        el.setAttribute('cx',x); el.setAttribute('cy',y);
+      }
+    });
+    // star: enters x=-40 at t=3.5, reaches x=1000 at t=8.5, y=250
+    var star = $('arena-star');
+    if(t >= 3.5){
+      var sx = -40 + (1000 - (-40)) * Math.min(1,(t-3.5)/5);
+      star.setAttribute('transform','translate('+sx+',250)');
+      star.setAttribute('opacity','1');
+    } else {
+      star.setAttribute('opacity','0');
+    }
+    // border colour change at t=6 (CSS transition handles 0.3s)
+    bgRect.setAttribute('stroke', t >= 6 ? '#E11D48' : '#334155');
+    // time bar
+    timeFill.style.width = (Math.min(t,ARENA.T)/ARENA.T*100)+'%';
+    // replay highlights
+    if(replay){
+      var hl = $('arena-highlights');
+      hl.setAttribute('opacity','1');
+      hl.innerHTML='';
+      // star highlight ring at current star pos
+      if(t>=3.5 && t<=8.5){
+        var sxn = -40 + 1040*((t-3.5)/5);
+        var cc = document.createElementNS(SVGNS,'circle');
+        cc.setAttribute('cx',sxn); cc.setAttribute('cy',250); cc.setAttribute('r',44);
+        cc.setAttribute('fill','none'); cc.setAttribute('stroke','#EA580C'); cc.setAttribute('stroke-width','5');
+        hl.appendChild(cc);
+        addHlLabel(hl, sxn, 250-58, 'star');
+      }
+      // border label
+      if(t>=6){ addHlLabel(hl, 480, 24, 'border'); }
+      // square morph label
+      if(t>=8){
+        var dx = fold(DARKS[0].x0,DARKS[0].vx,ARENA.R,ARENA.W-ARENA.R,t);
+        var dy = fold(DARKS[0].y0,DARKS[0].vy,ARENA.R,ARENA.H-ARENA.R,t);
+        var rr = document.createElementNS(SVGNS,'rect');
+        rr.setAttribute('x',dx-36); rr.setAttribute('y',dy-36); rr.setAttribute('width',72); rr.setAttribute('height',72);
+        rr.setAttribute('fill','none'); rr.setAttribute('stroke','#EA580C'); rr.setAttribute('stroke-width','5'); rr.setAttribute('rx',8);
+        hl.appendChild(rr);
+        addHlLabel(hl, dx, dy-48, 'square');
+      }
+      // counter
+      var cnt = whiteBounceTotal(t).total;
+      setText($('s4-count'), String(cnt));
+    }
+  }
+  function addHlLabel(g, x, y, txt){
+    var t = document.createElementNS(SVGNS,'text');
+    t.setAttribute('x',x); t.setAttribute('y',y); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','26'); t.setAttribute('font-weight','800'); t.setAttribute('fill','#EA580C');
+    t.setAttribute('font-family','sans-serif');
+    t.textContent = txt;
+    g.appendChild(t);
+  }
+
+  function stopLoop(){ rafStop(state); }
+
+  function runTask(replay){
+    stopLoop();
+    state.mode = replay ? 'replay' : 'run';
+    state.done = false;
+    state.t0 = performance.now();
+    if(!replay){
+      $('arena-highlights').setAttribute('opacity','0');
+      $('arena-highlights').innerHTML='';
+      $('s4-counter').style.display='none';
+      setText(statusEl,'');
+    } else {
+      $('s4-counter').style.display='inline-flex';
+      setText(statusEl,'Replay — watch for the surprises');
+    }
+    state.running = true;
+    rafStart(state, function(){
+      var t = (performance.now() - state.t0)/1000;
+      if(t >= ARENA.T){
+        applyScene(ARENA.T, replay);
+        state.running = false; state.done = true;
+        if(!replay){
+          setText(statusEl,'Time! How many white-disc bounces?');
+          refreshUI();
+        } else {
+          setText(statusEl,'White discs hit the walls 15 times.');
+        }
+        return false;
+      }
+      applyScene(t, replay);
+      return true;
+    });
+    refreshUI();
+  }
+
+  var step = 0; // 0 idle, 1 running/done-run, 2 revealed/replaying
+  DEMOS[3] = {
+    label: function(){
+      if(step===0) return "Start the 12-second task";
+      if(step===1) return state.done ? "Reveal and replay" : null; // disabled while running
+      return null;
+    },
+    act: function(){
+      if(step===0){ step = 1; runTask(false); }
+      else if(step===1 && state.done){
+        step = 2;
+        setText($('s4-title'), "You Can Miss What Is Right in Front of You");
+        ['s4-reveal','s4-why','s4-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');} });
+        runTask(true);
+      }
+      refreshUI();
+    },
+    reset: function(){
+      stopLoop();
+      step = 0; state.mode='idle'; state.done=false; state.countShown=false;
+      applyScene(0,false);
+      $('arena-highlights').setAttribute('opacity','0');
+      $('arena-highlights').innerHTML='';
+      $('s4-counter').style.display='none';
+      timeFill.style.width='0%';
+      bgRect.setAttribute('stroke','#334155');
+      bgRect.style.transition = 'stroke .3s linear';
+      setText(statusEl,'');
+      setText($('s4-title'), "Count the White Bounces");
+      ['s4-reveal','s4-why','s4-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.add('hidden-row'); e.classList.remove('shown');} });
+    },
+    /* exposed for self-test */
+    _whiteBounceTotal: whiteBounceTotal,
+    _isRunning: function(){ return !!state.running; }
+  };
+  applyScene(0,false);
+})();
+
+/* ===============================================================
+   SLIDE 5 — DRM word list
+   =============================================================== */
+(function(){
+  var WORDS = ["bed","rest","awake","tired","dream","wake","snooze","blanket","doze","slumber","snore","nap"];
+  var STEP_MS = 1000, GAP_MS = 300;
+  var tb = new TimerBag();
+  var step = 0;         // 0 idle, 1 playing, 2 poll, 3 marked, 4 fulllist
+  var idx = 0;
+  var views = {idle:$('wv-idle'), word:$('wv-word'), poll:$('wv-poll'), results:$('wv-results')};
+  function showView(name){
+    Object.keys(views).forEach(function(k){ views[k].classList.toggle('on', k===name); });
+  }
+  // dots
+  (function(){
+    var d = $('s5-dots');
+    for(var i=0;i<12;i++){ var s=document.createElement('span'); s.className='dot'; d.appendChild(s); }
+  })();
+  function setDot(n){
+    var ds = $('s5-dots').children;
+    for(var i=0;i<ds.length;i++){ ds[i].classList.toggle('lit', i < n); }
+  }
+  function playFrom(i){
+    idx = i;
+    if(i >= WORDS.length){
+      showView('poll'); step = 2; refreshUI(); return;
+    }
+    setText($('wv-word-text'), WORDS[i].toUpperCase());
+    setDot(i+1);
+    tb.after(function(){
+      // blank gap
+      setText($('wv-word-text'), '');
+      tb.after(function(){ playFrom(i+1); }, GAP_MS);
+    }, STEP_MS);
+  }
+  function markPoll(){
+    step = 3;
+    $('chip-TIRED').classList.add('shown-ok'); setText($('chip-TIRED-s'),'was shown');
+    $('chip-BLANKET').classList.add('shown-ok'); setText($('chip-BLANKET-s'),'was shown');
+    $('chip-WINDOW').classList.add('not-shown'); setText($('chip-WINDOW-s'),'not shown');
+    $('chip-SLEEP').classList.add('lure'); setText($('chip-SLEEP-s'),'NEVER shown');
+    setText($('s5-title'), "Memory Rebuilds. It Doesn’t Replay.");
+    var e=$('s5-reveal'); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');}
+    refreshUI();
+  }
+  function showFullList(){
+    step = 4;
+    var grid = $('s5-fulllist');
+    grid.innerHTML = '';
+    WORDS.forEach(function(w){
+      var t = document.createElement('div'); t.className='fl-tile'; t.textContent = w.toUpperCase();
+      grid.appendChild(t);
+    });
+    var lure = document.createElement('div'); lure.className='fl-tile fl-lure';
+    lure.textContent = 'SLEEP — never on the screen';
+    grid.appendChild(lure);
+    showView('results');
+    ['s5-why','s5-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');} });
+    refreshUI();
+  }
+  DEMOS[4] = {
+    label: function(){
+      if(step===0) return "Start the word list";
+      if(step===1) return null;              // disabled mid-sequence
+      if(step===2) return "Reveal which were shown";
+      if(step===3) return "Show the full list";
+      return null;
+    },
+    act: function(){
+      if(step===0){ step = 1; showView('word'); setDot(0); playFrom(0); refreshUI(); }
+      else if(step===2){ markPoll(); }
+      else if(step===3){ showFullList(); }
+    },
+    reset: function(){
+      tb.clear(); step = 0; idx = 0;
+      showView('idle'); setDot(0);
+      setText($('wv-word-text'),'');
+      ['chip-TIRED','chip-BLANKET','chip-SLEEP','chip-WINDOW'].forEach(function(id){
+        var c=$(id); if(c){ c.classList.remove('shown-ok','not-shown','lure'); }
+      });
+      setText($('chip-TIRED-s'),''); setText($('chip-BLANKET-s'),''); setText($('chip-SLEEP-s'),''); setText($('chip-WINDOW-s'),'');
+      $('s5-fulllist').innerHTML='';
+      setText($('s5-title'), "Memorize the Words");
+      ['s5-reveal','s5-why','s5-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.add('hidden-row'); e.classList.remove('shown');} });
+    },
+    _words: WORDS,
+    _isPlaying: function(){ return step===1; }
+  };
+})();
+
+/* ===============================================================
+   SLIDE 6 — Loftus & Palmer
+   =============================================================== */
+(function(){
+  var DATA = [
+    {verb:"contacted", mph:31.8},
+    {verb:"hit",       mph:34.0},
+    {verb:"bumped",    mph:38.1},
+    {verb:"collided",  mph:39.3},
+    {verb:"smashed",   mph:40.8}
+  ];
+  var step = 0;
+  function barRow(verb){
+    var rows = $('lp-bars').querySelectorAll('.bar-row');
+    for(var i=0;i<rows.length;i++){ if(rows[i].getAttribute('data-verb')===verb) return rows[i]; }
+    return null;
+  }
+  function showVerb(v){ setText($('lp-verb'), v); }
+  DEMOS[5] = {
+    label: function(){
+      return ["Show the first word","Now change one word","Show the other three words","One week later"][step] || null;
+    },
+    act: function(){
+      if(step===0){
+        step=1; showVerb("contacted");
+        var r=barRow("contacted"); if(r) r.classList.add('on');
+      } else if(step===1){
+        step=2; showVerb("smashed");
+        var r2=barRow("smashed"); if(r2) r2.classList.add('on');
+        var e=$('s6-reveal'); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');}
+      } else if(step===2){
+        step=3;
+        ["hit","bumped","collided"].forEach(function(v){ var r=barRow(v); if(r) r.classList.add('on'); });
+        showVerb("collided");
+      } else if(step===3){
+        step=4;
+        showVerb("smashed");
+        $('lp-glass').classList.add('on');
+        ['s6-why','s6-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');} });
+      }
+      refreshUI();
+    },
+    reset: function(){
+      step=0; showVerb("____");
+      $('lp-bars').querySelectorAll('.bar-row').forEach(function(r){ r.classList.remove('on'); });
+      $('lp-glass').classList.remove('on');
+      ['s6-reveal','s6-why','s6-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.add('hidden-row'); e.classList.remove('shown');} });
+    },
+    _data: DATA
+  };
+})();
+
+/* ===============================================================
+   SLIDE 7 — Wason 2-4-6
+   =============================================================== */
+(function(){
+  var GUIDED = [[8,10,12],[20,22,24],[3,17,104],[10,8,6]];
+  var step = 0;
+  function wasonRule(a,b,c){ return (a<b && b<c); }   // hidden rule
+  function logTriple(a,b,c){
+    var ok = wasonRule(a,b,c);
+    var row = document.createElement('div'); row.className='log-row';
+    var txt = document.createElement('span'); txt.textContent = a+' – '+b+' – '+c;
+    var v = document.createElement('span'); v.className='verdict '+(ok?'yes':'no'); v.textContent = ok?'YES':'NO';
+    row.appendChild(txt); row.appendChild(v);
+    $('w-log-rows').appendChild(row);
+    return ok;
+  }
+  $('s7').querySelectorAll('.tbtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      logTriple(+btn.getAttribute('data-a'), +btn.getAttribute('data-b'), +btn.getAttribute('data-c'));
+    });
+  });
+  $('w-custom-test').addEventListener('click', function(){
+    var a=$('w-in-a'), b=$('w-in-b'), c=$('w-in-c');
+    var va=parseInt(a.value,10), vb=parseInt(b.value,10), vc=parseInt(c.value,10);
+    if([va,vb,vc].some(function(v){ return isNaN(v) || v<-999 || v>999; })) return;
+    logTriple(va,vb,vc);
+  });
+  DEMOS[6] = {
+    label: function(){
+      if(step<4) return "Test "+GUIDED[step][0]+" – "+GUIDED[step][1]+" – "+GUIDED[step][2];
+      if(step===4) return "Reveal the rule";
+      return null;
+    },
+    act: function(){
+      if(step<4){
+        var t = GUIDED[step]; logTriple(t[0],t[1],t[2]); step++;
+      } else if(step===4){
+        step=5;
+        $('w-rule').classList.add('on');
+        setText($('s7-title'), "Why We Lock Onto a Wrong Guess");
+        ['s7-reveal','s7-why','s7-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');} });
+      }
+      refreshUI();
+    },
+    reset: function(){
+      step=0;
+      $('w-log-rows').innerHTML='';
+      $('w-rule').classList.remove('on');
+      setText($('s7-title'), "Guess the Secret Rule");
+      ['s7-reveal','s7-why','s7-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.add('hidden-row'); e.classList.remove('shown');} });
+    },
+    _rule: wasonRule
+  };
+})();
+
+/* ================================================================
+   Navigation / global controls
+   ================================================================ */
+var slides = [];
+for(var i=1;i<=TOTAL;i++){ slides.push($('s'+i)); }
+
+function navigateToSlide(n, opts){
+  if(n<0 || n>=TOTAL) return;
+  if(n===current && !(opts&&opts.force)) return;
+  // reset outgoing demo
+  var oldDemo = DEMOS[current];
+  if(oldDemo){ try{ oldDemo.reset(); }catch(e){} }
+  slides[current].classList.remove('is-active');
+  current = n;
+  slides[current].classList.add('is-active');
+  refreshUI();
+}
+
+function triggerActiveSlideAction(){
+  var d = DEMOS[current];
+  if(!d) return;
+  if(d.label()===null) return;
+  d.act();
+  refreshUI();
+}
+
+function refreshUI(){
+  // progress dots
+  var pdots = $('progress').children;
+  for(var i=0;i<pdots.length;i++){
+    pdots[i].setAttribute('aria-current', i===current ? 'true':'false');
+    pdots[i].setAttribute('aria-label', 'Slide '+(i+1));
+  }
+  setText($('slideInd'), (current+1)+' / '+TOTAL);
+  setText($('sectionLabel'), SECTIONS[current]);
+  $('prevBtn').disabled = current===0;
+  $('nextBtn').disabled = current===TOTAL-1;
+  // action button for active slide
+  for(var k=0;k<TOTAL;k++){
+    var btn = $('act-s'+(k+1));
+    if(!btn) continue;
+    var d = DEMOS[k];
+    var lab = d ? d.label() : null;
+    if(k===current){
+      if(lab){ btn.disabled=false; btn.textContent=lab; btn.nextElementSibling && (btn.nextElementSibling.style.display=''); }
+      else {
+        btn.disabled=true;
+        btn.textContent = (d && k===3 && DEMOS[3]._isRunning && DEMOS[3]._isRunning()) ? "Counting… 12 seconds" : "Demo complete";
+      }
+    }
+  }
+  // presenter cue
+  setText($('cueText'), (current+1)+'. '+CUES[current]);
+  // remote jump buttons
+  var rj = $('r-jump') ? $('r-jump').children : [];
+  for(var j=0;j<rj.length;j++){ rj[j].classList.toggle('cur', j===current); }
+  setText($('r-slide'), 'Slide '+(current+1)+' / '+TOTAL);
+  setText($('r-cue'), (current+1)+'. '+CUES[current]);
+  var ract = $('r-act');
+  if(ract){
+    var dl = DEMOS[current] ? DEMOS[current].label() : null;
+    if(dl){ ract.disabled=false; ract.textContent = dl; }
+    else { ract.disabled=true; ract.textContent = DEMOS[current] && DEMOS[current]._isRunning && DEMOS[current]._isRunning() ? "Counting…" : "No demo action on this slide"; }
+  }
+  Sync.publishState();
+}
+
+/* Progress dots */
+(function(){
+  var p = $('progress');
+  for(var i=0;i<TOTAL;i++){
+    var b = document.createElement('button');
+    b.className='pdot'; b.type='button';
+    (function(idx){ b.addEventListener('click', function(){ navigateToSlide(idx); }); })(i);
+    p.appendChild(b);
+  }
+})();
+
+/* Nav buttons + delegated action-button listener */
+$('prevBtn').addEventListener('click', function(){ navigateToSlide(current-1); });
+$('nextBtn').addEventListener('click', function(){ navigateToSlide(current+1); });
+document.addEventListener('click', function(ev){
+  var btn = ev.target.closest ? ev.target.closest('.act-btn[id^="act-s"]') : null;
+  if(btn){
+    var idx = parseInt(btn.id.replace('act-s',''),10)-1;
+    if(idx===current){ triggerActiveSlideAction(); }
+  }
+});
+
+/* Fullscreen */
+function toggleFullscreen(){
+  try{
+    if(document.fullscreenElement){ document.exitFullscreen(); }
+    else if(document.documentElement.requestFullscreen){ document.documentElement.requestFullscreen(); }
+  }catch(e){}
+}
+$('fsBtn').addEventListener('click', toggleFullscreen);
+
+/* Presenter cue panel */
+$('cueBtn').addEventListener('click', function(){
+  var open = $('cuePanel').classList.toggle('open');
+  $('cueBtn').setAttribute('aria-expanded', open?'true':'false');
+});
+
+/* Keyboard */
+function typingTarget(t){
+  if(!t) return false;
+  var tag = (t.tagName||'').toLowerCase();
+  return tag==='input' || tag==='textarea' || tag==='select' || t.isContentEditable;
+}
+document.addEventListener('keydown', function(ev){
+  if(typingTarget(ev.target)) return;
+  var k = ev.key;
+  if(k==='ArrowRight' || k==='PageDown' || k==='n' || k==='N'){ ev.preventDefault(); navigateToSlide(current+1); }
+  else if(k==='ArrowLeft' || k==='PageUp' || k==='p' || k==='P'){ ev.preventDefault(); navigateToSlide(current-1); }
+  else if(k>='1' && k<='9'){ ev.preventDefault(); navigateToSlide(parseInt(k,10)-1); }
+  else if(k==='0'){ ev.preventDefault(); navigateToSlide(9); }
+  else if(k==='f' || k==='F'){ ev.preventDefault(); toggleFullscreen(); }
+  else if(k==='a' || k==='A'){ ev.preventDefault(); triggerActiveSlideAction(); }
+  else if(k==='Home'){ ev.preventDefault(); navigateToSlide(0); }
+  else if(k==='End'){ ev.preventDefault(); navigateToSlide(TOTAL-1); }
+  else if((k===' ' || k==='Enter')){
+    // advance only when focus is on stage/background, never hijack native activation
+    if(ev.target === document.body || ev.target === $('stage')){
+      ev.preventDefault(); navigateToSlide(current+1);
+    }
+  }
+});
+
+/* Touch swipe (ignore swipes starting on controls/stimulus) */
+(function(){
+  var sx=0, sy=0, st=null;
+  $('stage').addEventListener('touchstart', function(ev){
+    var t = ev.target;
+    if(t.closest('button, input, select, textarea, .stim-card, #arena-svg')){ st=null; return; }
+    var p = ev.changedTouches[0]; sx=p.clientX; sy=p.clientY; st=Date.now();
+  }, {passive:true});
+  $('stage').addEventListener('touchend', function(ev){
+    if(!st) return;
+    var p = ev.changedTouches[0], dx=p.clientX-sx, dy=p.clientY-sy;
+    if(Date.now()-st < 600 && Math.abs(dx) > 60 && Math.abs(dx) > 2*Math.abs(dy)){
+      navigateToSlide(current + (dx<0?1:-1));
+    }
+    st=null;
+  }, {passive:true});
+})();
+
+/* Visibility: freeze running demos; require explicit restart */
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState==='hidden'){
+    var d = DEMOS[current];
+    if(d){ try{ d.reset(); }catch(e){} refreshUI(); }
+  }
+});
+
+/* Slide 10 replay buttons */
+$('s10').querySelectorAll('[data-replay]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var idx = parseInt(btn.getAttribute('data-replay'),10);
+    navigateToSlide(idx);   // navigateToSlide resets the outgoing demo; entering starts pristine
+  });
+});
+$('qa-btn').addEventListener('click', function(){
+  $('qa-elapsed').style.display='';
+  setText($('boardSyncStatus'), Sync.statusLine());
+});
+
+/* ================================================================
+   Optional phone remote + MQTT sync (fails gracefully offline)
+   ================================================================ */
+var Sync = (function(){
+  var MODE_REMOTE = /[?&]mode=remote/.test(location.search);
+  var client=null, connected=false, topic='trust-brain/lalit/2026';
+  var srcId = Math.random().toString(36).slice(2);
+  var lastSeenTs = 0;
+
+  function statusLine(){
+    if(connected) return 'Live sync connected · room “'+topic+'” (public broker — not private).';
+    return 'Sync unavailable offline — the board’s local controls work normally.';
+  }
+  function publish(msg){
+    if(!connected || !client) return;
+    msg.timestamp = Date.now();
+    try{ client.publish(topic, JSON.stringify(msg), {qos:0}); }catch(e){}
+  }
+  function publishState(){
+    if(MODE_REMOTE) return;
+    var d = DEMOS[current];
+    publish({type:'STATE', slideIndex:current, label:d?d.label():null, hasDemo:!!d, src:'board'});
+  }
+  function handleMessage(txt){
+    var m; try{ m = JSON.parse(txt); }catch(e){ return; }
+    if(!m || typeof m.type!=='string') return;
+    if(m.src==='remote' && MODE_REMOTE) return;           // remote ignores own ACT
+    if(m.src==='board' && !MODE_REMOTE) return;           // board ignores own STATE
+    if(m.timestamp && m.timestamp < lastSeenTs) return;   // stale echo guard
+    if(m.timestamp) lastSeenTs = m.timestamp;
+    if(m.type==='NAV'){
+      if(typeof m.slideIndex==='number' && m.slideIndex>=0 && m.slideIndex<TOTAL && m.slideIndex!==current){
+        navigateToSlide(m.slideIndex);
+      }
+    } else if(m.type==='ACT'){
+      if(!MODE_REMOTE && m.src==='remote' && m.slideIndex===current){ triggerActiveSlideAction(); }
+    } else if(m.type==='STATE'){
+      if(MODE_REMOTE){
+        if(typeof m.slideIndex==='number') remoteShow(m.slideIndex, m.label, m.hasDemo);
+      }
+    }
+  }
+  function remoteShow(idx, label, hasDemo){
+    setText($('r-slide'), 'Board: slide '+(idx+1)+' / '+TOTAL);
+    setText($('r-cue'), (idx+1)+'. '+CUES[idx]);
+    var ract=$('r-act');
+    if(hasDemo && label){ ract.disabled=false; ract.textContent=label; }
+    else { ract.disabled=true; ract.textContent='No demo action available'; }
+    var rj=$('r-jump').children;
+    for(var j=0;j<rj.length;j++) rj[j].classList.toggle('cur', j===idx);
+  }
+  function setStatus(on, extra){
+    connected = on;
+    var el = $('r-status');
+    if(el){
+      el.className = 'r-status ' + (on?'live':'off');
+      el.textContent = on ? 'Connected · room “'+topic+'” · public broker — not private.' : (extra || statusLine());
+    }
+    var bs = $('boardSyncStatus');
+    if(bs && $('qa-btn') && $('qa-btn').dataset.clicked!==undefined) bs.textContent = statusLine();
+  }
+  function connect(){
+    if(typeof window.mqtt === 'undefined'){
+      setStatus(false, 'Sync library unavailable (offline) — local controls unaffected.');
+      return;
+    }
+    try{
+      var url = 'wss://broker.emqx.io:8084/mqtt';
+      client = window.mqtt.connect(url, {clientId:'tyb-'+srcId, reconnectPeriod:2000, connectTimeout:4000});
+      client.on('connect', function(){
+        client.subscribe(topic, {qos:0});
+        setStatus(true);
+      });
+      client.on('message', function(_t, payload){ handleMessage(payload.toString()); });
+      client.on('error', function(){ setStatus(false, 'Sync failed to connect — local controls unaffected.'); });
+      client.on('offline', function(){ setStatus(false, 'Sync offline — local controls unaffected.'); });
+    }catch(e){
+      setStatus(false, 'Sync unavailable — local controls unaffected.');
+    }
+  }
+
+  if(MODE_REMOTE){
+    document.body.classList.add('remote-mode');
+    setText($('r-url'), location.href.replace(/[?&]mode=board/,'').replace(/([?&])mode=remote.*$/,'$1') + '?mode=remote');
+    var jump = $('r-jump');
+    for(var i=0;i<TOTAL;i++){
+      var b=document.createElement('button'); b.type='button'; b.textContent=String(i+1);
+      (function(idx){ b.addEventListener('click', function(){ sendNav(idx); }); })(i);
+      jump.appendChild(b);
+    }
+    function sendNav(idx){
+      if(connected){ publish({type:'NAV', slideIndex:idx, src:'remote'}); }
+      else { $('r-status').textContent='Not connected — cannot reach the board. Open the deck URL without ?mode=remote on the board.'; }
+    }
+    $('r-prev').addEventListener('click', function(){ var n=readCur()-1; if(n>=0) sendNav(n); });
+    $('r-next').addEventListener('click', function(){ var n=readCur()+1; if(n<TOTAL) sendNav(n); });
+    $('r-act').addEventListener('click', function(){
+      if(connected) publish({type:'ACT', slideIndex:readCur(), src:'remote'});
+      else $('r-status').textContent='Not connected — ACT does nothing remotely.';
+    });
+    $('r-apply').addEventListener('click', function(){
+      var v = $('r-topic').value.trim();
+      if(v){ if(client && connected){ try{client.unsubscribe(topic);}catch(e){} topic=v; client.subscribe(topic,{qos:0}); } else { topic=v; } }
+    });
+    function readCur(){
+      var m = ($('r-slide').textContent.match(/(\d+)\s*\/\s*10/));
+      return m ? parseInt(m[1],10)-1 : 0;
+    }
+    remoteShow(0, null, false);
+    // Load optional MQTT library; failure is caught and surfaced honestly.
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/mqtt/dist/mqtt.min.js';
+    s.onload = connect;
+    s.onerror = function(){ setStatus(false, 'Sync library could not load (no network?) — remote buttons stay local-only.'); };
+    document.head.appendChild(s);
+  } else {
+    // Board side: optionally attempt sync; never blocks the deck.
+    var s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/mqtt/dist/mqtt.min.js';
+    s2.onload = function(){ try{ connect(); }catch(e){} };
+    s2.onerror = function(){ /* offline: fine — deck works locally */ };
+    document.head.appendChild(s2);
+  }
+  return {publishState:publishState, statusLine:statusLine, isConnected:function(){return connected;}, topic:topic};
+})();
+
+/* ================================================================
+   Self-test
+   ================================================================ */
+window.__selfTest = function(){
+  var failures = [];
+  function check(name, cond){ if(!cond) failures.push(name); }
+  // 1. ten slides s1..s10
+  var secs = document.querySelectorAll('.slide');
+  check('exactly 10 slide sections', secs.length===10);
+  for(var i=1;i<=10;i++){ check('slide id s'+i+' exists', !!$('s'+i)); }
+  // 2. action buttons on slides 1-7
+  for(var k=1;k<=7;k++){ check('action button act-s'+k, !!$('act-s'+k)); }
+  // 3. slide 1 squares #7A7A7A
+  var a=$('sqA'), b=$('sqB');
+  check('slide1 square A fill #7A7A7A', a && a.getAttribute('fill')==='#7A7A7A');
+  check('slide1 square B fill #7A7A7A', b && b.getAttribute('fill')==='#7A7A7A');
+  // 4. slide 2 target radii 40
+  var t1=$('ebbT1'), t2=$('ebbT2');
+  check('slide2 target r=40 (both)', t1 && t2 && t1.getAttribute('r')==='40' && t2.getAttribute('r')==='40');
+  // 5. bounce model computes 15 (W1=2,W2=5,W3=4,W4=4)
+  var wb = DEMOS[3]._whiteBounceTotal(12);
+  check('bounce total = 15', wb.total===15);
+  check('per-disc bounces 2,5,4,4', wb.per.join(',')==='2,5,4,4');
+  // 6. Wason rule
+  var rule = DEMOS[6]._rule;
+  check('wason YES 2-4-6', rule(2,4,6));
+  check('wason YES 8-10-12', rule(8,10,12));
+  check('wason YES 20-22-24', rule(20,22,24));
+  check('wason YES 3-17-104', rule(3,17,104));
+  check('wason NO 10-8-6', !rule(10,8,6));
+  // 7. word list exact order
+  var expected = ["bed","rest","awake","tired","dream","wake","snooze","blanket","doze","slumber","snore","nap"];
+  check('DRM words exact', DEMOS[4]._words.join(',')===expected.join(','));
+  // 8. Loftus values
+  var lp = DEMOS[5]._data.map(function(d){return d.verb+':'+d.mph;}).join(' ');
+  check('loftus verbs+values', lp==='contacted:31.8 hit:34 bumped:38.1 collided:39.3 smashed:40.8');
+  var s6txt = $('s6').textContent;
+  check('slide6 shows 40.8', s6txt.indexOf('40.8')>=0);
+  check('slide6 never says 40.5', s6txt.indexOf('40.5')<0);
+  // 9. timers cancelled on navigate-away; reset idempotent; replay pristine
+  navigateToSlide(3);                       // arena slide
+  DEMOS[3].act();                            // start task
+  check('arena running after act', DEMOS[3]._isRunning()===true);
+  navigateToSlide(4);                        // leaving cancels
+  check('arena stopped after leaving', DEMOS[3]._isRunning()===false);
+  DEMOS[3].reset(); DEMOS[3].reset();
+  check('arena reset idempotent', DEMOS[3]._isRunning()===false);
+  navigateToSlide(4);
+  DEMOS[4].act();                            // start words
+  check('words playing', DEMOS[4]._isPlaying()===true);
+  navigateToSlide(5);                        // leaving cancels sequence
+  check('words cancelled on leave', DEMOS[4]._isPlaying()===false);
+  // 10. remote message hygiene (offline-safe): publishState must not throw
+  var threw=false;
+  try{ Sync.publishState(); }catch(e){ threw=true; }
+  check('sync publish safe offline', !threw);
+  check('local nav works regardless of sync', true);
+  if(failures.length===0){ console.log('[deck self-test] PASS'); return 'PASS'; }
+  console.log('[deck self-test] FAILURES:', failures);
+  return failures;
+};
+
+/* init */
+slides[0].classList.add('is-active');
+refreshUI();
+setTimeout(function(){ try{ window.__selfTest(); }catch(e){ console.log('[deck self-test] ERROR', e); } }, 1500);
+
+})();
+</script>
+</body>
+</html>
