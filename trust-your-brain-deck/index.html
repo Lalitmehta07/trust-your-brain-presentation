@@ -24,6 +24,8 @@
   --orange:#EA580C;
   --ok:#15803D;
   --shadow:0 10px 30px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.05);
+  --neu-out:6px 6px 14px rgba(15,23,42,.10), -6px -6px 14px rgba(255,255,255,.9), inset 0 0 0 1px rgba(15,23,42,.03);
+  --neu-in:inset 4px 4px 9px rgba(15,23,42,.12), inset -4px -4px 9px rgba(255,255,255,.75);
   --radius:16px;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -71,32 +73,67 @@ button{font-family:inherit;color:inherit}
 }
 .slide.is-active{display:flex;animation:slidein .35s cubic-bezier(.2,.7,.2,1) both}
 @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Animated vector backgrounds — one per slide, decorative only */
+.slide-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
+.slide-bg > svg{position:absolute;width:100%;height:100%}
+.slide > *:not(.slide-bg){position:relative;z-index:1}
+.bg-orb{fill:none;stroke-width:2.5;opacity:.06}
+@keyframes driftA{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(2.2%,-1.8%) rotate(6deg)}}
+@keyframes driftB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-2%,2%) scale(1.04)}}
+@keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes bobY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.anim-a{animation:driftA 26s ease-in-out infinite}
+.anim-b{animation:driftB 32s ease-in-out infinite}
+.anim-c{animation:spinSlow 90s linear infinite;transform-origin:center}
+.anim-d{animation:bobY 14s ease-in-out infinite}
 @media (prefers-reduced-motion: reduce){
   .slide.is-active{animation:none}
+  .anim-a,.anim-b,.anim-c,.anim-d{animation:none}
   *{transition-duration:.01ms !important}
 }
 
-/* Bottom control bar */
+/* Bottom control bar — navigation cluster permanently at bottom-left */
 .controls{
   flex:0 0 auto;display:flex;align-items:center;gap:clamp(8px,1.4vw,18px);
   padding:clamp(6px,1vh,12px) clamp(10px,1.6vw,24px);
   border-top:1px solid var(--line);background:var(--paper);
 }
 .nav-btn{
-  min-height:44px;padding:8px 18px;border:1px solid var(--line);border-radius:12px;
-  background:var(--paper);font-weight:700;font-size:clamp(12px,1.15vw,16px);cursor:pointer;
+  min-height:56px;min-width:96px;padding:10px 26px;border:1px solid var(--line);border-radius:16px;
+  background:var(--paper);font-weight:700;font-size:clamp(13px,1.25vw,18px);cursor:pointer;
+  box-shadow:var(--neu-out);transition:box-shadow .15s ease, transform .1s ease;
 }
 .nav-btn:hover:not(:disabled){border-color:var(--cobalt);color:var(--cobalt)}
-.nav-btn:disabled{opacity:.4;cursor:default}
-.progress{display:flex;gap:6px;align-items:center;flex:1;justify-content:center}
+.nav-btn:active:not(:disabled){box-shadow:var(--neu-in);transform:translateY(1px)}
+.nav-btn:disabled{opacity:.4;cursor:default;box-shadow:none}
+.progress{display:flex;gap:10px;align-items:center;flex:1;justify-content:center}
 .pdot{
-  width:clamp(10px,1.1vw,16px);height:clamp(10px,1.1vw,16px);border-radius:50%;
+  width:clamp(14px,1.5vw,22px);height:clamp(14px,1.5vw,22px);border-radius:50%;
   border:1.5px solid var(--slate);background:transparent;cursor:pointer;padding:0;
 }
 .pdot[aria-current="true"]{background:var(--cobalt);border-color:var(--cobalt)}
 .pdot:hover{border-color:var(--cobalt)}
 .slide-ind{font-size:clamp(11px,1.1vw,15px);font-weight:700;color:var(--muted);font-family:var(--mono);white-space:nowrap}
 .cue-toggle{min-height:44px}
+.nav-cluster{display:flex;align-items:center;gap:clamp(8px,1vw,14px)}
+.icon-btn.audio-toggle[aria-pressed="true"]{border-color:var(--cobalt);color:var(--cobalt);background:#EEF2FF}
+.icon-btn.audio-toggle:disabled{opacity:.5;cursor:default}
+.icon-btn{box-shadow:var(--neu-out)}
+.icon-btn:active{box-shadow:var(--neu-in)}
+.act-btn,.vote-btn,.flip-btn,.rep-btn{box-shadow:var(--neu-out)}
+.act-btn:active,.vote-btn:active,.flip-btn:active,.rep-btn:active{box-shadow:var(--neu-in)}
+.stim-card,.info-card,.hrow,.word-panel{box-shadow:var(--neu-out)}
+.s8-quiz{display:flex;flex-direction:column;gap:clamp(6px,1vh,12px);margin-top:clamp(6px,1vh,12px)}
+.qclaim{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:clamp(8px,1.2vh,14px) clamp(10px,1.4vw,18px);box-shadow:var(--neu-out);display:flex;flex-direction:column;gap:6px}
+.qtext{font-weight:700;font-size:clamp(12px,1.25vw,18px);line-height:1.3}
+.qctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.conf-wrap{display:flex;align-items:center;gap:8px;font-size:clamp(11px,1.05vw,15px);color:var(--muted);font-weight:700;margin-left:auto}
+.conf-range{width:clamp(90px,10vw,160px);accent-color:var(--cobalt)}
+.flip-btn.pred[aria-pressed="true"]{background:#EEF2FF;border-color:var(--cobalt);color:var(--cobalt);box-shadow:var(--neu-in)}
+.qverdict{font-weight:800;font-size:clamp(11px,1.15vw,16px)}
+.qverdict.ok{color:var(--ok)} .qverdict.bad{color:var(--coral)}
+.qverdict.shown{display:block;animation:rowin .3s ease both}
 
 /* Presenter cue panel (private overlay) */
 #cuePanel{
@@ -255,8 +292,7 @@ h1.title{
 .gtile .gl{font-size:clamp(9px,.95vw,13px);color:var(--muted);font-weight:700;line-height:1.3}
 .crash-svg{width:100%;max-width:340px;display:block;margin:0 auto 8px}
 
-/* ============================================================ Slide 7 Wason */
-.wason-wrap{display:flex;flex-direction:column;gap:clamp(6px,1vh,12px);width:100%;height:100%;min-height:0}
+/* ============================================================ Slide 7 Confirmation bias */
 .seed-row{
   display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:12px;
   padding:clamp(6px,1vh,12px) clamp(10px,1.2vw,16px);background:var(--paper);font-weight:800;font-size:clamp(13px,1.5vw,22px);
@@ -332,6 +368,8 @@ h1.title{
     </div>
     <div class="top-spacer"></div>
     <span class="timer" id="deckTimer" aria-label="Presentation timer">00:00</span>
+    <button class="icon-btn audio-toggle" id="bgmBtn" type="button" aria-pressed="false" title="Background music (off)">Music · Off</button>
+    <button class="icon-btn audio-toggle" id="sfxBtn" type="button" aria-pressed="true" title="Action sounds (on)">Sounds · On</button>
     <button class="icon-btn" id="fsBtn" type="button">Fullscreen</button>
   </header>
 
@@ -340,6 +378,7 @@ h1.title{
 
       <!-- ================= SLIDE 1 : Title + brightness test ================= -->
       <section class="slide" id="s1" aria-label="Slide 1: Title and brightness test">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><circle class="bg-orb" cx="820" cy="90" r="180" stroke="#2547D1"></circle><circle class="bg-orb" cx="820" cy="90" r="120" stroke="#2547D1"></circle></g><g class="anim-d"><rect x="60" y="430" width="140" height="140" rx="24" fill="#0F172A" opacity=".04"></rect></g></svg></div>
         <div class="s1-grid">
           <div class="s1-left">
             <p class="eyebrow">Live Experiments · 2026</p>
@@ -354,11 +393,15 @@ h1.title{
               <div class="stim-card">
                 <svg id="s1-svg" viewBox="0 0 400 220" shape-rendering="crispEdges" role="img"
                      aria-label="Two identical gray squares, one on a dark background and one on a light background. Do they look the same?">
-                  <rect x="0" y="0" width="200" height="220" fill="#1F1F1F"></rect>
-                  <rect x="200" y="0" width="200" height="220" fill="#EBEBEB"></rect>
+                  <rect x="0" y="0" width="200" height="220" fill="#0A0A0A"></rect>
+                  <rect x="200" y="0" width="200" height="220" fill="#FFFFFF"></rect>
                   <rect id="sqA" x="55" y="65" width="90" height="90" fill="#7A7A7A"></rect>
                   <rect id="sqB" x="255" y="65" width="90" height="90" fill="#7A7A7A"></rect>
                   <rect id="s1-bridge" x="145" y="90" width="110" height="40" fill="#7A7A7A" opacity="0" style="transition:opacity .6s ease"></rect>
+                <g id="s1-equal" opacity="0" style="transition:opacity .6s ease">
+                  <rect x="120" y="170" width="160" height="34" rx="8" fill="#2547D1"></rect>
+                  <text x="200" y="193" text-anchor="middle" font-size="19" font-weight="800" fill="#FFFFFF" font-family="sans-serif">PIXELS EQUAL · #7A7A7A</text>
+                </g>
                 </svg>
               </div>
               <p class="instruction" style="text-align:center;margin:10px auto 0">Do these two gray squares look the same?</p>
@@ -374,6 +417,7 @@ h1.title{
 
       <!-- ================= SLIDE 2 : Ebbinghaus ================= -->
       <section class="slide" id="s2" aria-label="Slide 2: Ebbinghaus size illusion">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><circle class="bg-orb" cx="860" cy="470" r="150" stroke="#EA580C"></circle><circle class="bg-orb" cx="860" cy="470" r="95" stroke="#EA580C"></circle></g><g class="anim-c"><circle class="bg-orb" cx="90" cy="80" r="60" stroke="#94A3B8"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Perception · 02</p>
           <h1 class="title" id="s2-title">Which Orange Circle Is Bigger?</h1>
@@ -427,6 +471,7 @@ h1.title{
 
       <!-- ================= SLIDE 3 : Auditory priming ================= -->
       <section class="slide" id="s3" aria-label="Slide 3: one sound, three listening rounds">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-d"><path d="M0,470 Q60,420 120,470 T240,470 T360,470 T480,470 T600,470 T720,470 T840,470 T960,470" fill="none" stroke="#2547D1" stroke-width="3" opacity=".07"></path></g><g class="anim-a"><circle class="bg-orb" cx="880" cy="90" r="110" stroke="#F59E0B"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Perception · 03</p>
           <h1 class="title" id="s3-title">One Sound. Three Hearings.</h1>
@@ -468,6 +513,7 @@ h1.title{
 
       <!-- ================= SLIDE 4 : Attention arena ================= -->
       <section class="slide" id="s4" aria-label="Slide 4: selective attention counting task">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-d"><circle class="bg-orb" cx="120" cy="100" r="70" stroke="#0F172A"></circle></g><g class="anim-b"><rect x="700" y="380" width="200" height="120" rx="20" fill="none" stroke="#E11D48" stroke-width="3" opacity=".06"></rect></g></svg></div>
         <div>
           <p class="eyebrow">Attention · 04</p>
           <h1 class="title" id="s4-title">Count the White Ball’s Bounces</h1>
@@ -504,6 +550,7 @@ h1.title{
 
       <!-- ================= SLIDE 5 : DRM words ================= -->
       <section class="slide" id="s5" aria-label="Slide 5: memory word list demonstration">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><rect x="760" y="60" width="150" height="190" rx="18" fill="none" stroke="#2547D1" stroke-width="3" opacity=".06"></rect></g><g class="anim-d"><circle class="bg-orb" cx="100" cy="460" r="90" stroke="#94A3B8"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Memory · 05</p>
           <h1 class="title" id="s5-title">Memorize the Words</h1>
@@ -547,6 +594,7 @@ h1.title{
 
       <!-- ================= SLIDE 6 : Loftus & Palmer ================= -->
       <section class="slide" id="s6" aria-label="Slide 6: Loftus and Palmer question wording experiment">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M40,500 L200,500 M40,500 L40,360" stroke="#EA580C" stroke-width="3" opacity=".07" fill="none"></path><rect x="70" y="430" width="34" height="70" fill="#EA580C" opacity=".05"></rect><rect x="120" y="405" width="34" height="95" fill="#EA580C" opacity=".06"></rect></g><g class="anim-d"><circle class="bg-orb" cx="850" cy="110" r="120" stroke="#2547D1"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Memory · 06</p>
           <h1 class="title">Can One Word Change a Memory?</h1>
@@ -579,7 +627,7 @@ h1.title{
                 <div class="bar-row" data-verb="hit"><span class="bar-label">hit</span><span class="bar-track"><span class="bar-fill" style="--w:.7556"></span></span><span class="bar-val">34.0</span></div>
                 <div class="bar-row" data-verb="bumped"><span class="bar-label">bumped</span><span class="bar-track"><span class="bar-fill" style="--w:.8467"></span></span><span class="bar-val">38.1</span></div>
                 <div class="bar-row" data-verb="collided"><span class="bar-label">collided</span><span class="bar-track"><span class="bar-fill" style="--w:.8733"></span></span><span class="bar-val">39.3</span></div>
-                <div class="bar-row" data-verb="smashed"><span class="bar-label">smashed</span><span class="bar-track"><span class="bar-fill" style="--w:.9067;background:var(--coral)"></span></span><span class="bar-val">40.8</span></div>
+                <div class="bar-row" data-verb="smashed"><span class="bar-label">smashed</span><span class="bar-track"><span class="bar-fill" style="--w:.9067;background:var(--coral)"></span></span><span class="bar-val">fastest<span class="disputed-note">*</span></span></div>
               </div>
               <p class="axis-note">Average estimated speed (mph) · axis 0–45</p>
               <div class="glass-panel" id="lp-glass">
@@ -595,7 +643,7 @@ h1.title{
           </div>
           <div class="side-col">
             <div class="row ask"><span class="k">Ask</span><span class="v">Predict: how far apart will the average guesses be for “contacted” and “smashed”?</span></div>
-            <div class="row reveal hidden-row" id="s6-reveal"><span class="k">Reveal</span><span class="v">About 9 mph apart, from a single word. (45 students watched crash films.)</span></div>
+            <div class="row reveal hidden-row" id="s6-reveal"><span class="k">Reveal</span><span class="v">Roughly 9 mph apart between “contacted” and the fastest verb — from a single word. (45 students watched crash films.) *The exact “smashed” figure differs between reprint transcriptions of the original table, so it is omitted here rather than guessed.</span></div>
             <div class="row why hidden-row" id="s6-why"><span class="k">Why</span><span class="v">A question can carry information, and that information can blend into what we think we remember.</span></div>
             <div class="row careful hidden-row" id="s6-careful"><span class="k">Careful</span><span class="v">Not “witnesses are always wrong”. Researchers still debate exactly how the effect works.</span></div>
             <div class="action-zone">
@@ -608,6 +656,7 @@ h1.title{
 
       <!-- ================= SLIDE 7 : Confirmation bias ================= -->
       <section class="slide" id="s7" aria-label="Slide 7: visual confirmation bias activity">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-c"><circle class="bg-orb" cx="80" cy="470" r="130" stroke="#E11D48"></circle></g><g class="anim-a"><rect x="790" y="70" width="120" height="160" rx="16" fill="none" stroke="#2547D1" stroke-width="3" opacity=".06" transform="rotate(8 850 150)"></rect></g></svg></div>
         <div>
           <p class="eyebrow">Judgement · 07</p>
           <h1 class="title" id="s7-title">Only-Yes Test</h1>
@@ -641,17 +690,19 @@ h1.title{
             </div>
           </div>
         </div>
-        <p class="evidence">Evidence · Wason (1960); Nickerson (1998); Lord, Lepper &amp; Preston (1984) · classroom demonstration, not an exact replication</p>
+        <p class="evidence">Evidence · Nickerson (1998); Lord, Lepper &amp; Preston (1984) · classroom demonstration, not an exact replication</p>
       </section>
 
       <!-- ================= SLIDE 8 : Confidence & accuracy ================= -->
       <section class="slide" id="s8" aria-label="Slide 8: confidence and accuracy">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M60,480 A200,200 0 0 1 460,480" fill="none" stroke="#15803D" stroke-width="4" opacity=".07"></path></g><g class="anim-d"><circle class="bg-orb" cx="840" cy="120" r="100" stroke="#F59E0B"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Calibration · 08</p>
           <h1 class="title">Confidence Does Not Guarantee Accuracy</h1>
-          <p class="instruction">Feeling sure and being right are different things — but they are not opposites.</p>
+          <p class="instruction">Feeling sure and being right are different things — but they are not opposites. Predict each claim, set your confidence, then reveal.</p>
+          <p class="arena-status" id="s8-title-note" role="status" aria-live="polite"></p>
         </div>
-        <div class="card-list">
+        <div class="card-list" id="s8-cards">
           <div class="info-card">
             <span class="num">01</span>
             <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4a8 8 0 0 1 8 8"></path><path d="M12 4a8 8 0 0 0-8 8"></path><line x1="12" y1="12" x2="16" y2="8"></line><circle cx="12" cy="12" r="1.6" fill="currentColor"></circle></svg>
@@ -671,12 +722,19 @@ h1.title{
             <span class="tag">Slides 2 · 4 · 5 · 6 · 7</span>
           </div>
         </div>
+        <div class="s8-quiz" id="s8-quiz" role="group" aria-label="Predict each claim and rate your confidence">
+          <div class="qclaim" data-answer="true"><span class="qtext">A confident first impression is sometimes informative — but never after a misleading question or a long delay.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">Looks true</button><button class="flip-btn pred" data-pred="false" type="button">Looks false</button><span class="conf-wrap">Confidence <input class="conf-range" type="range" min="50" max="100" value="70" step="5" aria-label="Confidence percent"><span class="conf-val">70%</span></span></span><span class="qverdict hidden-row"></span></div>
+          <div class="qclaim" data-answer="false"><span class="qtext">People who are very sure of an answer are almost always right about it.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">Looks true</button><button class="flip-btn pred" data-pred="false" type="button">Looks false</button><span class="conf-wrap">Confidence <input class="conf-range" type="range" min="50" max="100" value="70" step="5" aria-label="Confidence percent"><span class="conf-val">70%</span></span></span><span class="qverdict hidden-row"></span></div>
+          <div class="qclaim" data-answer="true"><span class="qtext">The feeling of confidence usually comes from how smoothly the story fits — not from how much evidence was checked.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">Looks true</button><button class="flip-btn pred" data-pred="false" type="button">Looks false</button><span class="conf-wrap">Confidence <input class="conf-range" type="range" min="50" max="100" value="70" step="5" aria-label="Confidence percent"><span class="conf-val">70%</span></span></span><span class="qverdict hidden-row"></span></div>
+        </div>
+        <div class="action-zone"><button class="act-btn" id="act-s8" type="button">Reveal the answers</button></div>
         <div class="callout">Confidence can be wrong. That is not the same as confidence always being wrong.</div>
-        <p class="evidence">Evidence · Koriat (2012); Wixted &amp; Wells (2017); Kahneman &amp; Klein (2009)</p>
+        <p class="evidence">Evidence · Koriat (2012); Wixted &amp; Wells (2017); Kahneman &amp; Klein (2009) · classroom activity, claims paraphrase the research</p>
       </section>
 
       <!-- ================= SLIDE 9 : Habits ================= -->
       <section class="slide" id="s9" aria-label="Slide 9: practical reasoning habits">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><path d="M760,90 l30,30 l55,-60" stroke="#15803D" stroke-width="6" fill="none" opacity=".08" stroke-linecap="round"></path></g><g class="anim-c"><circle class="bg-orb" cx="120" cy="440" r="110" stroke="#2547D1"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Habits · 09</p>
           <h1 class="title">How to Check Yourself</h1>
@@ -694,6 +752,7 @@ h1.title{
 
       <!-- ================= SLIDE 10 : Closing ================= -->
       <section class="slide" id="s10" aria-label="Slide 10: closing and replay">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><circle class="bg-orb" cx="480" cy="540" r="220" stroke="#2547D1"></circle><circle class="bg-orb" cx="480" cy="540" r="150" stroke="#E11D48"></circle></g><g class="anim-d"><circle class="bg-orb" cx="880" cy="80" r="70" stroke="#94A3B8"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Closing · 10</p>
           <h1 class="title">What Else Might <span class="accent">You Be Missing?</span></h1>
@@ -708,17 +767,17 @@ h1.title{
           <div class="replay-row" role="group" aria-label="Replay an experiment">
             <span class="rl">Replay an experiment</span>
             <button class="rep-btn" data-replay="1" type="button">Size</button>
-            <button class="rep-btn" data-replay="2" type="button">Duck / rabbit</button>
+            <button class="rep-btn" data-replay="2" type="button">Sound</button>
             <button class="rep-btn" data-replay="3" type="button">Attention</button>
             <button class="rep-btn" data-replay="4" type="button">Memory</button>
-            <button class="rep-btn" data-replay="6" type="button">Secret rule</button>
+            <button class="rep-btn" data-replay="6" type="button">Only-yes card</button>
             <button class="rep-btn" data-replay="0" type="button">Replay from Slide 1</button>
           </div>
           <div class="qa-state">
             <button class="act-btn" id="qa-btn" type="button" style="min-height:48px;font-size:clamp(12px,1.25vw,18px)">Questions?</button>
             <span class="qa-badge" id="qa-elapsed" style="display:none">Q&amp;A · elapsed <span id="qa-time">00:00</span></span>
           </div>
-          <p class="sync-status" id="boardSyncStatus">Local presentation mode — timer running, all controls available offline.</p>
+          <p class="sync-status" id="localModeNote">Fully local presentation — no network required after loading.</p>
         </div>
         <p class="evidence">Synthesis of the evidence on slides 2–9</p>
       </section>
@@ -731,10 +790,12 @@ h1.title{
   </main>
 
   <footer class="controls">
-    <button class="nav-btn" id="prevBtn" type="button">Previous</button>
+    <div class="nav-cluster">
+      <button class="nav-btn" id="prevBtn" type="button" aria-label="Previous slide">‹ Previous</button>
+      <button class="nav-btn" id="nextBtn" type="button" aria-label="Next slide">Next ›</button>
+      <span class="slide-ind" id="slideInd">1 / 10</span>
+    </div>
     <div class="progress" id="progress" role="group" aria-label="Go to slide"></div>
-    <button class="nav-btn" id="nextBtn" type="button">Next</button>
-    <span class="slide-ind" id="slideInd">1 / 10</span>
     <button class="icon-btn cue-toggle" id="cueBtn" type="button" aria-expanded="false">Presenter cue</button>
   </footer>
 </div>
@@ -759,7 +820,7 @@ var CUES = [
  "Listening rounds — 1:30. Play the SAME embedded recording three times with different captions only; run the hands-up vote after each round; disclose that the tone is a placeholder, not the classic green-needle clip.",
  "Attention arena — 1:45. One white ball, count wall bounces only during the 12-second run; answer is 6; replay highlights the star crossing and the border colour change.",
  "Memory words — 1:45. Do not hint at the missing-word theme before the list and poll; SLEEP was never shown; keep the tone friendly.",
- "Loftus & Palmer — 1:15. Prediction before revealing verbs; contacted 31.8 vs smashed 40.8 mph (Experiment 1 table); no broken glass in the film; mechanism is debated.",
+ "Loftus & Palmer — 1:15. Prediction before revealing verbs; contacted 31.8 mph vs smashed fastest (exact smashed figure disputed across reprints — omitted); no broken glass in the film; mechanism is debated.",
  "Confirmation-bias card — 1:30. Let the audience pick one flip; every choice teaches something; the odd-dot card is the only falsifying test; reveal the lesson.",
  "Confidence ≠ accuracy — 0:45. Audience predicts + rates confidence per claim, then reveals; say both halves: confidence can be wrong, but is not always wrong.",
  "Check yourself — 0:45. Walk through four habits; emphasise changing the process rather than relying on willpower.",
@@ -784,6 +845,51 @@ setInterval(function(){
 /* ---------------- Demo registry ----------------
    Each demo: {label():string|null, act():void, reset():void}       */
 var DEMOS = {};
+
+/* ---------------- Audio system: independent BGM + action-sound controls ---------------- */
+var AUDIO = { bgmOn:false, sfxOn:true, clipEl:null };
+(function(){
+  /* sources are injected below via __B64_*__ tokens (all local data URIs, zero network) */
+  var bgm = new Audio(); bgm.src = '__B64_BGM__'; bgm.loop = true; bgm.volume = 0.16;
+  var tickEl = new Audio(); tickEl.src = '__B64_TICK__';
+  var popEl  = new Audio(); popEl.src  = '__B64_POP__';
+  var chimeEl= new Audio(); chimeEl.src= '__B64_CHIME__';
+  AUDIO.bgm = bgm;
+  AUDIO.sfx = { tick:tickEl, pop:popEl, chime:chimeEl };
+  AUDIO.playSfx = function(name){
+    if(!AUDIO.sfxOn || current === 2) return;   // silent during the audio illusion (slide 3)
+    var el = AUDIO.sfx[name]; if(!el) return;
+    try{ el.currentTime = 0; el.play().catch(function(){}); }catch(e){}
+  };
+  AUDIO.setBgm = function(on){
+    AUDIO.bgmOn = on;
+    var btn = $('bgmBtn');
+    if(btn){ btn.setAttribute('aria-pressed', on?'true':'false'); btn.textContent = 'Music · ' + (on?'On':'Off'); }
+    if(current === 2){ return; }                // never play under the listening experiment
+    if(on){ bgm.volume = 0; try{ bgm.play().catch(function(){}); }catch(e){} fade(bgm, 0.16); }
+    else { fade(bgm, 0, function(){ try{ bgm.pause(); }catch(e){} }); }
+  };
+  AUDIO.setSfx = function(on){
+    AUDIO.sfxOn = on;
+    var btn = $('sfxBtn');
+    if(btn){ btn.setAttribute('aria-pressed', on?'true':'false'); btn.textContent = 'Sounds · ' + (on?'On':'Off'); }
+  };
+  function fade(el, target, done){
+    if(reducedMotion){ el.volume = target; if(done) done(); return; }
+    var from = el.volume, t0f = performance.now(), dur = 500;
+    function st(){
+      var k = Math.min(1,(performance.now()-t0f)/dur);
+      el.volume = from + (target-from)*k;
+      if(k<1) requestAnimationFrame(st); else if(done) done();
+    }
+    requestAnimationFrame(st);
+  }
+})();
+$('bgmBtn').addEventListener('click', function(){ AUDIO.setBgm(!AUDIO.bgmOn); });
+$('sfxBtn').addEventListener('click', function(){ AUDIO.setSfx(!AUDIO.sfxOn); });
+document.addEventListener('click', function(ev){
+  if(ev.target.closest && ev.target.closest('.act-btn,.nav-btn,.vote-btn,.flip-btn,.rep-btn')) AUDIO.playSfx('pop');
+}, true);
 
 /* Helper: cancellable timeout bag */
 function TimerBag(){
@@ -824,19 +930,27 @@ function rafStop(obj){
   var step = 0, tb = new TimerBag();
   var bridge, readout;
   DEMOS[0] = {
-    label: function(){ return step===0 ? "Bridge the two squares" : null; },
+    label: function(){ return step===0 ? "Bridge the two squares" : (step===1 ? "Prove they are equal" : null); },
     act: function(){
-      if(step!==0) return;
-      step = 1;
       bridge = $('s1-bridge'); readout = $('s1-readout');
-      if(bridge) bridge.setAttribute('opacity','1');
-      if(readout){ setText(readout, "Same gray. Identical pixel values. Your brain judged each square by what surrounds it."); readout.classList.add('revealed'); }
+      if(step===0){
+        step = 1;
+        if(bridge) bridge.setAttribute('opacity','1');
+        if(readout){ setText(readout, "One continuous gray band — no edge left between the squares. Still not convinced?"); readout.classList.add('revealed'); }
+      } else if(step===1){
+        step = 2;
+        var eq = $('s1-equal');
+        if(eq) eq.setAttribute('opacity','1');
+        if(bridge) bridge.setAttribute('opacity','0');
+        if(readout){ setText(readout, "Both squares are exactly #7A7A7A — identical pixels. Surroundings, not light, set the feeling of brightness."); readout.classList.add('revealed'); }
+      }
       refreshUI();
     },
     reset: function(){
       step = 0; tb.clear();
       bridge = $('s1-bridge'); readout = $('s1-readout');
       if(bridge) bridge.setAttribute('opacity','0');
+      var eq = $('s1-equal'); if(eq) eq.setAttribute('opacity','0');
       if(readout){ setText(readout, "Hands up: left looks lighter · right looks lighter · they look the same."); readout.classList.remove('revealed'); }
     }
   };
@@ -1065,7 +1179,7 @@ function rafStop(obj){
       if(t >= ARENA.T){
         applyScene(ARENA.T, replay);
         state.running = false; state.done = true;
-        if(!replay){ setText(statusEl,'Time! How many bounces did the white ball make?'); refreshUI(); }
+        if(!replay){ setText(statusEl,'Time! How many bounces did the white ball make?'); AUDIO.playSfx('chime'); refreshUI(); }
         else { setText(statusEl,'The white ball hit the walls 6 times.'); }
         return false;
       }
@@ -1210,7 +1324,7 @@ function rafStop(obj){
     {verb:"hit",       mph:34.0},
     {verb:"bumped",    mph:38.1},
     {verb:"collided",  mph:39.3},
-    {verb:"smashed",   mph:40.8}
+    {verb:"smashed",   mph:null}
   ];
   var step = 0;
   function barRow(verb){
@@ -1332,6 +1446,63 @@ function rafStop(obj){
   };
 })();
 
+/* ===============================================================
+   SLIDE 8 — Confidence & accuracy: predictions + confidence + reveal
+   =============================================================== */
+(function(){
+  var revealed = false;
+  var claims = Array.prototype.slice.call(document.querySelectorAll('#s8-quiz .qclaim'));
+  claims.forEach(function(c){
+    c.querySelectorAll('.pred').forEach(function(b){
+      b.setAttribute('aria-pressed','false');
+      b.addEventListener('click', function(){
+        c.querySelectorAll('.pred').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        b.setAttribute('aria-pressed','true');
+        c.setAttribute('data-picked', b.getAttribute('data-pred'));
+      });
+    });
+    var r = c.querySelector('.conf-range'), v = c.querySelector('.conf-val');
+    if(r && v) r.addEventListener('input', function(){ v.textContent = r.value + '%'; });
+  });
+  DEMOS[7] = {
+    label: function(){ return revealed ? null : "Reveal the answers"; },
+    act: function(){
+      if(revealed) return;
+      revealed = true;
+      claims.forEach(function(c){
+        var ans = c.getAttribute('data-answer');
+        var picked = c.getAttribute('data-picked') || 'none';
+        var conf = c.querySelector('.conf-range');
+        var vd = c.querySelector('.qverdict');
+        var msg;
+        if(picked==='none'){ msg = 'Answer: TRUE — ' ; }
+        else {
+          var correct = (picked===ans);
+          msg = (correct ? 'You called it right. ' : 'Careful — that one goes the other way. ');
+        }
+        var truth = (ans==='true') ? 'TRUE' : 'FALSE';
+        var extra = '';
+        if(ans==='false' && picked==='true'){ extra = ' High confidence, wrong target: exactly the calibration gap.'; }
+        if(conf && parseInt(conf.value,10)>=90 && ans==='false'){ extra += ' Saying 90%+ sure for this claim is common — and misleading.'; }
+        vd.textContent = 'Verdict: ' + truth + '. ' + msg.replace('Answer: TRUE — ','') + extra;
+        vd.classList.remove('hidden-row'); vd.classList.add('shown');
+        vd.classList.add((picked===ans)?'ok':'bad');
+      });
+      setText($('s8-title-note'), 'Hands up matched feelings to facts — how many were surprised?');
+      refreshUI();
+    },
+    reset: function(){
+      revealed = false;
+      claims.forEach(function(c){
+        c.removeAttribute('data-picked');
+        c.querySelectorAll('.pred').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        var vd = c.querySelector('.qverdict');
+        vd.className = 'qverdict hidden-row'; vd.textContent = '';
+      });
+    }
+  };
+})();
+
 /* ================================================================
    Navigation / global controls
    ================================================================ */
@@ -1347,6 +1518,11 @@ function navigateToSlide(n, opts){
   slides[current].classList.remove('is-active');
   current = n;
   slides[current].classList.add('is-active');
+  /* the listening experiment (slide 3) must stay free of music and action sounds */
+  if(AUDIO.bgmOn){
+    if(n===2){ try{ AUDIO.bgm.pause(); }catch(e){} }
+    else { try{ AUDIO.bgm.currentTime=0; AUDIO.bgm.play().catch(function(){}); }catch(e){} }
+  }
   refreshUI();
 }
 
@@ -1474,7 +1650,7 @@ $('s10').querySelectorAll('[data-replay]').forEach(function(btn){
 });
 $('qa-btn').addEventListener('click', function(){
   $('qa-elapsed').style.display='';
-  setText($('boardSyncStatus'), 'Q&A running — local presentation mode.');
+  $('qa-btn').disabled = true;
 });
 
 /* ================================================================
@@ -1500,26 +1676,39 @@ window.__selfTest = function(){
   // 4. slide 2 target radii 40
   var t1=$('ebbT1'), t2=$('ebbT2');
   check('slide2 target r=40 (both)', t1 && t2 && t1.getAttribute('r')==='40' && t2.getAttribute('r')==='40');
-  // 5. bounce model computes 15 (W1=2,W2=5,W3=4,W4=4)
+  // 5. bounce model: ONE white ball, exactly 6 bounces in 12 s
   var wb = DEMOS[3]._whiteBounceTotal(12);
-  check('bounce total = 15', wb.total===15);
-  check('per-disc bounces 2,5,4,4', wb.per.join(',')==='2,5,4,4');
-  // 6. Wason rule
-  var rule = DEMOS[6]._rule;
-  check('wason YES 2-4-6', rule(2,4,6));
-  check('wason YES 8-10-12', rule(8,10,12));
-  check('wason YES 20-22-24', rule(20,22,24));
-  check('wason YES 3-17-104', rule(3,17,104));
-  check('wason NO 10-8-6', !rule(10,8,6));
+  check('bounce total = 6', wb.total===6);
+  // 6. slide 7 is the visual confirmation-bias card (no number-sequence rule task anywhere)
+  check('no number-sequence puzzle on slide7', $('s7').textContent.indexOf('2-4-6')<0);
+  check('slide7 has flip buttons', document.querySelectorAll('#s7 .flip-btn').length===3);
+  check('slide7 evidence line cites Nickerson', $('s7').textContent.indexOf('Nickerson')>=0);
   // 7. word list exact order
   var expected = ["bed","rest","awake","tired","dream","wake","snooze","blanket","doze","slumber","snore","nap"];
   check('DRM words exact', DEMOS[4]._words.join(',')===expected.join(','));
-  // 8. Loftus values
+  // 8. Loftus values — disputed "smashed" figure omitted by design
   var lp = DEMOS[5]._data.map(function(d){return d.verb+':'+d.mph;}).join(' ');
-  check('loftus verbs+values', lp==='contacted:31.8 hit:34 bumped:38.1 collided:39.3 smashed:40.8');
+  check('loftus verbs+values', lp==='contacted:31.8 hit:34 bumped:38.1 collided:39.3 smashed:null');
   var s6txt = $('s6').textContent;
-  check('slide6 shows 40.8', s6txt.indexOf('40.8')>=0);
-  check('slide6 never says 40.5', s6txt.indexOf('40.5')<0);
+  check('slide6 never shows disputed 40.8', s6txt.indexOf('40.8')<0);
+  check('slide6 never shows disputed 40.5', s6txt.indexOf('40.5')<0);
+  check('slide6 keeps verifiable 31.8', s6txt.indexOf('31.8')>=0);
+  // 8b. audio integrated: real data URI, no placeholder token
+  var au = $('s3-audio');
+  check('slide3 audio src is wav data URI', !!au && au.src.indexOf('data:audio/wav;base64,')===0 && au.src.length>1000);
+  check('no __AUDIO_B64__ token left', document.documentElement.outerHTML.indexOf('__AUDIO_B64__')<0);
+  check('no __B64_ tokens left', document.documentElement.outerHTML.indexOf('__B64_')<0);
+  // 8c. fully local: zero network references outside xmlns
+  var html = document.documentElement.outerHTML.replace(/https:\/\/www\.w3\.org\/2000\/svg/g,'');
+  check('no remote URLs', !/https?:\/\/(?!www\.w3\.org)/.test(html.replace(/xmlns[^ ]*/g,'')) || !/<script src|<link[^>]+href="http|WebSocket|EventSource|fetch\(/.test(html));
+  check('no websocket/eventsource/fetch', html.indexOf('WebSocket')<0 && html.indexOf('EventSource')<0 && html.indexOf('fetch(')<0);
+  // 8d. audio controls exist and are independent
+  check('bgm + sfx toggles exist', !!$('bgmBtn') && !!$('sfxBtn'));
+  // 8e. slide 8 interactive
+  check('slide8 quiz claims', document.querySelectorAll('#s8-quiz .qclaim').length===3);
+  check('slide8 act button', !!$('act-s8'));
+  // 8f. keyboard hints not shown in UI text
+  check('no visible press-A hint', document.body.textContent.indexOf('press A')<0);
   // 9. timers cancelled on navigate-away; reset idempotent; replay pristine
   navigateToSlide(3);                       // arena slide
   DEMOS[3].act();                            // start task
