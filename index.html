@@ -398,6 +398,32 @@ h1.title{
 .qverdict.ok{color:var(--ok)} .qverdict.bad{color:var(--coral)}
 .qclaim.correct-pick{border-color:var(--ok)}
 
+
+/* ---- Revision 2: per-slide music toggle ---- */
+.music-toggle{min-height:44px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-size:clamp(10px,1vw,14px);font-weight:700;color:var(--muted);cursor:pointer;box-shadow:var(--neu-out);white-space:nowrap}
+.music-toggle[aria-pressed="true"]{color:var(--cobalt);border-color:var(--cobalt);box-shadow:var(--neu-in)}
+/* ---- Slide 4: dots + impact rings ---- */
+.dot-b{fill:#0F172A}
+.dot-w{fill:#FFFFFF;stroke:#CBD5E1;stroke-width:2}
+.imp-ring{fill:none;stroke:#16A34A;stroke-width:6;opacity:0}
+.s4-vote{display:flex;gap:clamp(10px,1.6vw,22px);flex-wrap:wrap;justify-content:center;margin-top:6px}
+/* ---- Slide 5: speech status ---- */
+.speech-note{margin-top:6px;font-size:clamp(10px,1.05vw,15px);font-weight:700;color:var(--muted);text-align:center;min-height:1.4em}
+/* ---- Slide 6: verb chips + collision anim ---- */
+.lp-collide{background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:var(--neu-in);padding:6px}
+.cars-svg{width:100%;height:auto;display:block}
+.verb-chips{display:flex;gap:clamp(6px,1vw,14px);flex-wrap:wrap;justify-content:center;margin-top:8px}
+.chip-btn{min-height:44px;padding:8px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--paper);font-weight:800;font-size:clamp(11px,1.2vw,17px);cursor:pointer;color:var(--ink)}
+.chip-btn:hover{border-color:var(--cobalt);color:var(--cobalt)}
+.chip-btn.on{border-color:var(--cobalt);color:var(--cobalt);box-shadow:var(--neu-in)}
+/* ---- Slide 7: gorilla video player ---- */
+.gv-shell{background:#0B1220;border-radius:14px;overflow:hidden;box-shadow:var(--neu-in)}
+.gv-video{display:block;width:100%;aspect-ratio:16/9;background:#000}
+.gv-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#111827}
+.gv-play,.gv-replay,.gv-mute{min-height:40px;padding:6px 14px;border:1px solid #374151;border-radius:10px;background:#1F2937;color:#E5E7EB;font-weight:700;font-size:clamp(11px,1.1vw,15px);cursor:pointer}
+.gv-time{font-family:var(--mono);font-size:clamp(10px,1vw,14px);color:#9CA3AF;white-space:nowrap}
+.gv-track{position:relative;flex:1;height:10px;background:#374151;border-radius:6px;cursor:pointer;min-width:80px}
+.gv-prog{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--cobalt);border-radius:6px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -410,7 +436,6 @@ h1.title{
     </div>
     <div class="top-spacer"></div>
     <span class="timer" id="deckTimer" aria-label="Presentation timer">00:00</span>
-    <button class="icon-btn audio-toggle" id="bgmBtn" type="button" aria-pressed="false" title="Background music (off)">Music · Off</button>
     <button class="icon-btn audio-toggle" id="sfxBtn" type="button" aria-pressed="true" title="Action sounds (on)">Sounds · On</button>
     <button class="icon-btn" id="fsBtn" type="button">Fullscreen</button>
   </header>
@@ -418,38 +443,20 @@ h1.title{
   <main class="stage-wrap">
     <div class="stage" id="stage" tabindex="-1">
 
-      <!-- ================= SLIDE 1 : Title + brightness test ================= -->
-            <section class="slide" id="s1" aria-label="Slide 1: Five-dot perception experiment">
+      <!-- ================= SLIDE 1 : Title / opening ================= -->
+      <section class="slide" id="s1" aria-label="Slide 1: title and opening question">
         <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><circle class="bg-orb" cx="820" cy="90" r="180" stroke="#2547D1"></circle><circle class="bg-orb" cx="820" cy="90" r="120" stroke="#2547D1"></circle></g><g class="anim-d"><rect x="60" y="430" width="140" height="140" rx="24" fill="#0F172A" opacity=".04"></rect></g></svg></div>
-        <div class="fd-wrap">
-          <div class="fd-head">
-            <p class="eyebrow">Perception · 01</p>
-            <h1 class="title" id="s1-title">Can You Trust Your Own Brain?</h1>
-            <p class="instruction" id="fd-instruction">Watch the five dots for about twelve seconds. Don’t look away — and don’t discuss yet.</p>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1 1 auto;min-height:0;gap:clamp(6px,1.4vh,16px);justify-content:center;text-align:center">
+          <p class="eyebrow">Perception · 01</p>
+          <h1 class="title" id="s1-title">Can You Trust Your Own Brain?</h1>
+          <p class="instruction" id="fd-instruction" style="max-width:min(90%,900px)">How perception, attention, memory and judgement shape our reality — demonstrated live, on this screen, with you as the participants.</p>
+          <div class="stim-card" style="width:min(92%,860px);display:flex;align-items:center;justify-content:center;gap:clamp(18px,3vw,44px);padding:clamp(10px,1.6vh,20px) clamp(14px,2vw,28px)">
+            <svg viewBox="0 0 96 96" width="72" height="72" role="img" aria-label="An eye whose pupil is a five-pointed star." style="flex:0 0 auto"><circle cx="48" cy="48" r="44" fill="none" stroke="#2547D1" stroke-width="4" opacity=".85"></circle><path d="M48 26 l6.5 13.5 15 2 -11 10.5 3 15 -13.5 -7.5 -13.5 7.5 3 -15 -11 -10.5 15 -2 z" fill="#2547D1" opacity=".9"></path></svg>
+            <p style="font-weight:800;font-size:clamp(13px,1.5vw,22px);color:var(--ink-soft);line-height:1.35;margin:0">Ten slides. Six live experiments. One question: how much of what you experience is your brain’s interpretation?</p>
           </div>
-          <div class="stim-card fd-stage" id="fd-stage">
-            <svg id="fd-svg" viewBox="0 0 960 400" role="img" aria-label="Five black dots drifting smoothly across the screen. One of them slowly changes shape from a circle into a square.">
-              <g id="fd-shapes"></g>
-              <g id="fd-callout" opacity="0" style="transition:opacity .6s ease">
-                <circle cx="0" cy="0" r="46" fill="none" stroke="#E11D48" stroke-width="5" stroke-dasharray="10 8"></circle>
-                <text x="0" y="-58" text-anchor="middle" font-size="26" font-weight="900" fill="#E11D48" font-family="sans-serif">this one changed</text>
-              </g>
-            </svg>
-          </div>
-          <div class="fd-ui">
-            <div class="fd-question hidden-row" id="fd-question" role="status" aria-live="polite">Did you notice anything change?</div>
-            <div class="fd-vote hidden-row" id="fd-vote" role="group" aria-label="Audience vote">
-              <button class="vote-btn fd-yes" id="fd-yes" type="button">YES<span class="vc" id="vc-fd-yes">0</span></button>
-              <button class="vote-btn fd-no" id="fd-no" type="button">NO<span class="vc" id="vc-fd-no">0</span></button>
-            </div>
-            <div class="action-zone" style="justify-content:center">
-              <button class="act-btn" id="act-s1" type="button">Begin the observation</button>
-            </div>
-            <p class="readout" id="s1-readout" aria-live="polite"></p>
-          </div>
+          <p class="credit credit-inline"><img class="avatar" src="__PROFILE_B64__" alt="Portrait of the presenter, Lalit Mehta" width="44" height="44"><span>Presented by <strong>Lalit Mehta</strong></span></p>
+          <p class="evidence">Opening slide · the demonstrations that follow draw on Simons &amp; Chabris (1999); Rensink, O’Regan &amp; Clark (1997)</p>
         </div>
-        <p class="credit credit-inline"><img class="avatar" src="data:image/jpeg;base64,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" alt="Portrait of the presenter, Lalit Mehta" width="44" height="44"><span>Presented by <strong>Lalit Mehta</strong></span></p>
-        <p class="evidence">Change blindness &amp; inattentional blindness · Simons &amp; Chabris (1999); Rensink, O’Regan &amp; Clark (1997) · classroom demonstration, not a standardized test</p>
       </section>
 
       <!-- ================= SLIDE 2 : Ebbinghaus ================= -->
@@ -550,21 +557,21 @@ h1.title{
       </section>
 
       <!-- ================= SLIDE 4 : Attention arena ================= -->
-      <section class="slide" id="s4" aria-label="Slide 4: selective attention counting task">
+      <section class="slide" id="s4" aria-label="Slide 4: inattentional blindness — count the white dot’s bounces">
         <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-d"><circle class="bg-orb" cx="120" cy="100" r="70" stroke="#0F172A"></circle></g><g class="anim-b"><rect x="700" y="380" width="200" height="120" rx="20" fill="none" stroke="#E11D48" stroke-width="3" opacity=".06"></rect></g></svg></div>
         <div>
           <p class="eyebrow">Attention · 04</p>
-          <h1 class="title" id="s4-title">Count the White Ball’s Bounces</h1>
-          <p class="instruction">For 12 seconds, silently count how many times the WHITE ball hits a wall. Ignore the dark disc.</p>
+          <h1 class="title" id="s4-title">Count the White Dot’s Bounces</h1>
+          <p class="instruction">For 12 seconds, silently count how many times the WHITE dot hits a wall. It bounces exactly ten times — make each one easy to see.</p>
         </div>
         <div class="cols">
           <div class="stim-col">
             <div style="width:100%;display:flex;flex-direction:column;min-height:0">
               <div class="stim-card" style="flex:0 1 auto;min-height:0">
-                <svg id="arena-svg" viewBox="-12 -12 984 524" role="img" aria-label="An arena with one white ball and one dark disc moving and bouncing off the walls. Count only the white ball’s wall bounces.">
+                <svg id="arena-svg" viewBox="-12 -12 984 524" role="img" aria-label="An arena with five black dots and one white dot drifting around. The white dot bounces off the walls ten times in twelve seconds. Count only the white dot’s wall bounces.">
                   <rect id="arena-bg" x="0" y="0" width="960" height="500" rx="14" fill="#64748B" stroke="#334155" stroke-width="4" style="transition:stroke .3s linear"></rect>
                   <g id="arena-discs"></g>
-                  <polygon id="arena-star" points="" fill="#0F172A" opacity="0"></polygon>
+                  <polygon id="arena-star" points="" fill="#EA580C" stroke="#0F172A" stroke-width="2" opacity="0"></polygon>
                   <g id="arena-highlights" opacity="0" style="transition:opacity .3s"></g>
                 </svg>
               </div>
@@ -574,12 +581,15 @@ h1.title{
           </div>
           <div class="side-col">
             <div class="counter-chip" id="s4-counter" style="display:none">White bounces: <span id="s4-count">0</span></div>
-            <div class="row ask"><span class="k">Ask</span><span class="v">Eyes on the arena. Count the white ball’s wall bounces only. Keep the number to yourself.</span></div>
-            <div class="row reveal hidden-row" id="s4-reveal"><span class="k">Reveal</span><span class="v">The white ball hit the walls 6 times. Did you also notice the dark star drifting across the middle, and the border turning from slate to crimson?</span></div>
+            <div class="counter-chip" id="s4-answer" style="display:none">The answer is <strong>10</strong>.</div>
+            <div class="row ask"><span class="k">Ask</span><span class="v">Eyes on the arena. Count the white dot’s wall bounces only — each bounce flashes green on the wall. Keep your number secret until the reveal.</span></div>
+            <div class="row reveal hidden-row" id="s4-reveal"><span class="k">Reveal</span><span class="v">The white dot hit the walls exactly 10 times. Now the honest questions: did the circle-into-square change catch your eye? Did you notice the orange star travelling across the arena?</span></div>
+            <div class="row ask hidden-row" id="s4-askblind"><span class="k">Ask</span><span class="v">Hands up if you noticed the shape change. Hands up for the travelling star. Watch how many hands stay down while everyone was busy counting.</span></div>
             <div class="row why hidden-row" id="s4-why"><span class="k">Why</span><span class="v">When attention is busy, unexpected things can go unnoticed. In one study, 20 of 24 radiologists searching lung scans missed a gorilla image — and 12 of those 20 looked right at it.</span></div>
             <div class="row careful hidden-row" id="s4-careful"><span class="k">Careful</span><span class="v">Not everyone misses these, and it isn’t carelessness. Not noticing is different from forgetting.</span></div>
             <div class="action-zone">
               <button class="act-btn" id="act-s4" type="button">Start the 12-second task</button>
+              <button class="act-btn" id="s4-replay-btn" type="button" disabled>Replay with highlights</button>
             </div>
           </div>
         </div>
@@ -592,13 +602,13 @@ h1.title{
         <div>
           <p class="eyebrow">Memory · 05</p>
           <h1 class="title" id="s5-title">Memorize the Words</h1>
-          <p class="instruction">Words will appear one at a time. Read silently — don’t write, don’t speak.</p>
+          <p class="instruction">Words appear one at a time in large type and are spoken aloud. Just listen and read — don’t write, don’t speak.</p>
         </div>
         <div class="cols">
           <div class="stim-col">
             <div style="width:100%;display:flex;flex-direction:column;min-height:0">
               <div class="word-panel">
-                <div class="word-view on" id="wv-idle"><p class="idle-hint">Press start. Words appear for about a second each.</p></div>
+                <div class="word-view on" id="wv-idle"><p class="idle-hint">Press start. Each word appears large and is spoken aloud, then the next follows automatically.</p></div>
                 <div class="word-view" id="wv-word"><span class="big-word" id="wv-word-text"></span></div>
                 <div class="word-view" id="wv-poll">
                   <p class="poll-q">Which of these were on the screen?</p>
@@ -623,7 +633,12 @@ h1.title{
             <div class="row why hidden-row" id="s5-why"><span class="k">Why</span><span class="v">Memory keeps the gist, and the gist can feel like a real memory. In the original studies, many people falsely recalled the missing word — about 40% in free recall — and in recognition tests they said “yes” to it about as often as to words actually shown. Rates in one room will vary.</span></div>
             <div class="row careful hidden-row" id="s5-careful"><span class="k">Careful</span><span class="v">A hand up for “sleep” isn’t a bad memory — it’s normal, gist-based memory.</span></div>
             <div class="action-zone">
+              <button class="act-btn" id="s5-prev" type="button" disabled>Previous</button>
               <button class="act-btn" id="act-s5" type="button">Start the word list</button>
+              <button class="act-btn" id="s5-pause" type="button" disabled>Pause</button>
+              <button class="act-btn" id="s5-next" type="button" disabled>Next</button>
+              <button class="act-btn" id="s5-auto" type="button" aria-pressed="true">Auto: On</button>
+              <p class="speech-note" id="s5-speech" role="status" aria-live="polite"></p>
             </div>
           </div>
         </div>
@@ -641,24 +656,31 @@ h1.title{
         <div class="cols">
           <div class="stim-col">
             <div style="width:100%;display:flex;flex-direction:column;min-height:0;overflow-y:auto">
-              <svg class="crash-svg" viewBox="0 0 340 150" role="img" aria-label="Simple illustration of two stylized cars meeting at an intersection.">
+              <div class="lp-collide"><svg class="cars-svg" id="lp-cars" viewBox="0 0 340 150" role="img" aria-label="Animated scene: a blue car drives in from the left and a red car crosses the intersection; they collide with a brief flash. Nothing graphic."><g id="lp-cars-scene">
                 <rect x="0" y="0" width="340" height="150" rx="10" fill="#F4F5F8"></rect>
                 <line x1="170" y1="0" x2="170" y2="150" stroke="#DCE1E9" stroke-width="10"></line>
                 <line x1="0" y1="75" x2="340" y2="75" stroke="#DCE1E9" stroke-width="10"></line>
-                <g transform="translate(96,78)">
+                <g id="lp-car-a" transform="translate(-120,78)">
                   <rect x="-46" y="-14" width="92" height="26" rx="8" fill="#2547D1"></rect>
                   <rect x="-26" y="-26" width="46" height="16" rx="6" fill="#2547D1"></rect>
                   <circle cx="-28" cy="14" r="8" fill="#0F172A"></circle><circle cx="26" cy="14" r="8" fill="#0F172A"></circle>
                 </g>
-                <g transform="translate(216,52) rotate(90)">
+                <g id="lp-car-b" transform="translate(216,-120) rotate(90)">
                   <rect x="-46" y="-14" width="92" height="26" rx="8" fill="#E11D48"></rect>
                   <rect x="-26" y="-26" width="46" height="16" rx="6" fill="#E11D48"></rect>
                   <circle cx="-28" cy="14" r="8" fill="#0F172A"></circle><circle cx="26" cy="14" r="8" fill="#0F172A"></circle>
                 </g>
-                <g stroke="#F59E0B" stroke-width="4" stroke-linecap="round">
+                <g id="lp-flash" stroke="#F59E0B" stroke-width="4" stroke-linecap="round" opacity="0">
                   <line x1="160" y1="66" x2="150" y2="52"></line><line x1="166" y1="60" x2="162" y2="44"></line><line x1="172" y1="66" x2="184" y2="54"></line>
                 </g>
-              </svg>
+                </g></svg></div>
+              <div class="verb-chips" id="lp-chips" role="group" aria-label="Choose the verb used in the question">
+                <button class="chip-btn" data-verb="contacted" type="button">CONTACTED</button>
+                <button class="chip-btn" data-verb="hit" type="button">HIT</button>
+                <button class="chip-btn" data-verb="bumped" type="button">BUMPED</button>
+                <button class="chip-btn" data-verb="collided" type="button">COLLIDED</button>
+                <button class="chip-btn" data-verb="smashed" type="button">SMASHED</button>
+              </div>
               <p class="qsentence">“About how fast were the cars going when they <span class="verb" id="lp-verb">____</span> each other?”</p>
               <div class="barchart" id="lp-bars" aria-label="Bar chart of average estimated speed in miles per hour for each verb condition.">
                 <div class="bar-row" data-verb="contacted"><span class="bar-label">contacted</span><span class="bar-track"><span class="bar-fill" style="--w:.7067"></span></span><span class="bar-val">31.8</span></div>
@@ -667,7 +689,7 @@ h1.title{
                 <div class="bar-row" data-verb="collided"><span class="bar-label">collided</span><span class="bar-track"><span class="bar-fill" style="--w:.8733"></span></span><span class="bar-val">39.3</span></div>
                 <div class="bar-row" data-verb="smashed"><span class="bar-label">smashed</span><span class="bar-track"><span class="bar-fill" style="--w:.9067;background:var(--coral)"></span></span><span class="bar-val">40.8</span></div>
               </div>
-              <p class="axis-note">Average estimated speed (mph) · axis 0–45</p>
+              <p class="axis-note">Average estimated speed (mph) · axis 0–45 · bars grow when revealed</p>
               <div class="glass-panel" id="lp-glass">
                 <strong style="font-size:clamp(12px,1.3vw,18px)">Experiment 2 · one week later · “Did you see any broken glass?”</strong>
                 <div class="glass-tiles">
@@ -685,43 +707,54 @@ h1.title{
             <div class="row why hidden-row" id="s6-why"><span class="k">Why</span><span class="v">A question can carry information, and that information can blend into what we think we remember.</span></div>
             <div class="row careful hidden-row" id="s6-careful"><span class="k">Careful</span><span class="v">Not “witnesses are always wrong”. Researchers still debate exactly how the effect works.</span></div>
             <div class="action-zone">
-              <button class="act-btn" id="act-s6" type="button">Show the first word</button>
+              <button class="act-btn" id="act-s6" type="button">Play the collision film</button>
+              <button class="act-btn" id="s6-replay" type="button" disabled>Replay the film</button>
             </div>
           </div>
         </div>
         <p class="evidence">Evidence · Loftus &amp; Palmer (1974); Loftus (2005)</p>
       </section>
 
-      <!-- ================= SLIDE 7 : Confirmation bias ================= -->
-            <section class="slide" id="s7" aria-label="Slide 7: confirmation bias evidence cards">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-c"><circle class="bg-orb" cx="80" cy="470" r="130" stroke="#E11D48"></circle></g><g class="anim-a"><rect x="790" y="70" width="120" height="160" rx="16" fill="none" stroke="#2547D1" stroke-width="3" opacity=".06" transform="rotate(8 850 150)"></rect></g></svg></div>
+      <!-- ================= SLIDE 7 : Gorilla video + confirmation bias ================= -->
+      <section class="slide" id="s7" aria-label="Slide 7: selective attention video and confirmation bias investigation">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-c"><circle class="bg-orb" cx="80" cy="470" r="130" stroke="#E11D48"></circle></g><g class="anim-b"><path d="M700,80 q60,-40 120,0 t120,0" fill="none" stroke="#2547D1" stroke-width="3" opacity=".05"></path></g></svg></div>
         <div>
           <p class="eyebrow">Judgement · 07</p>
-          <h1 class="title" id="s7-title">Which Evidence Would You Check First?</h1>
-          <p class="instruction">Hypothesis: <strong>“This study method improves test scores.”</strong> Tap an evidence card to inspect it. What would you look at first?</p>
+          <h1 class="title" id="s7-title">Count the Passes — Then Check Your Assumptions</h1>
+          <p class="instruction">Two demos, one theme: what you attend to shapes what you believe. First, watch the clip and count every pass made by the <strong>WHITE team</strong>. Don’t announce the count yet — and don’t spoil it for anyone watching later.</p>
         </div>
         <div class="cols">
           <div class="stim-col">
-            <div class="ev-grid" id="ev-grid" role="group" aria-label="Evidence cards — tap to inspect">
-              <button class="ev-card sup" data-ev="a" type="button"><span class="ev-k">Class A report</span><span class="ev-t">“Students using the method say they feel more prepared.”</span><span class="ev-back">Feeling prepared is not measured performance. Self-report only.</span></button>
-              <button class="ev-card sup" data-ev="b" type="button"><span class="ev-k">Post on social media</span><span class="ev-t">“My grades went up after I started this method!”</span><span class="ev-back">One happy post. No baseline, no comparison group.</span></button>
-              <button class="ev-card dis" data-ev="c" type="button"><span class="ev-k">Controlled comparison</span><span class="ev-t">A similar class that kept old habits scored just as high.</span><span class="ev-back">Same scores without the method — the claim loses its main support.</span></button>
-              <button class="ev-card dis" data-ev="d" type="button"><span class="ev-k">Follow-up year</span><span class="ev-t">Last year’s users regressed to their previous average scores.</span><span class="ev-back">The “improvement” faded once novelty wore off.</span></button>
+            <div class="gv-shell">
+              <video id="gorilla-video" class="gv-video" src="classroom-clip.mp4" preload="metadata" playsinline controls aria-label="Excerpt from The Monkey Business Illusion by Daniel Simons: people pass basketballs while an unexpected event unfolds."></video>
+              <div class="gv-bar">
+                <button class="gv-play" id="gv-play" type="button" aria-label="Play or pause the video">Play</button>
+                <button class="gv-replay" id="gv-replay" type="button" aria-label="Replay the video from the start">Replay</button>
+                <button class="gv-mute" id="gv-mute" type="button" aria-pressed="false" aria-label="Mute or unmute the video">Sound: On</button>
+                <div class="gv-track" id="gv-track" role="slider" aria-label="Video position" tabindex="0"><div class="gv-prog" id="gv-prog"></div></div>
+                <span class="gv-time" id="gv-time">0:00 / 0:36</span>
+              </div>
             </div>
             <div class="cb-result" id="cb-result" role="status" aria-live="polite"></div>
           </div>
           <div class="side-col">
-            <div class="row ask"><span class="k">Ask</span><span class="v">Most people reach for the supportive cards first. Count how many hands pick A or B before revealing.</span></div>
-            <div class="row reveal hidden-row" id="s7-reveal"><span class="k">Reveal</span><span class="v">You inspected what agreed with the claim. The contradicting cards sat untouched — until now.</span></div>
-            <div class="row why hidden-row" id="s7-why"><span class="k">Why</span><span class="v">Confirmation bias is the tendency to seek, interpret, or remember information in ways that support existing beliefs.</span></div>
-            <div class="row careful hidden-row" id="s7-careful"><span class="k">Careful</span><span class="v">This is a classroom illustration, not a validated psychological test. Nothing here measures anyone’s honesty or intelligence.</span></div>
+            <div class="row ask"><span class="k">Ask</span><span class="v">After the clip: how many passes did the white team make? And — did you notice the gorilla? Anyone spot the other mid-scene change?</span></div>
+            <div class="row reveal hidden-row" id="s7-gorillareveal"><span class="k">Reveal</span><span class="v">A person in a gorilla suit walks through the scene. Many viewers miss it while counting passes — that is inattentional blindness, not bad eyesight.</span></div>
+            <div class="row why hidden-row" id="s7-why"><span class="k">Why</span><span class="v">Attention is a limited resource. What you focus on determines what you fail to see — and what you miss becomes evidence you never weigh.</span></div>
+            <div class="row"><span class="k">Investigate</span><span class="v">Now a short fictional case. Claim: <strong>“This study method improves test scores.”</strong> Form a gut judgement first, then tap any evidence card to inspect it.</span></div>
+            <div class="ev-grid" id="ev-grid" role="group" aria-label="Evidence cards — tap to inspect">
+              <button class="ev-card sup" data-ev="a" type="button"><span class="ev-k">Class A report</span><span class="ev-t">“Students using the method say they feel more prepared.”</span><span class="ev-back">Feeling prepared isn’t measured learning.</span></button>
+              <button class="ev-card sup" data-ev="b" type="button"><span class="ev-k">Post on social media</span><span class="ev-t">“My grades went up after I started this method!”</span><span class="ev-back">One happy post — no comparison group.</span></button>
+              <button class="ev-card dis" data-ev="c" type="button"><span class="ev-k">Controlled comparison</span><span class="ev-t">A similar class that kept old habits scored just as high.</span><span class="ev-back">With a baseline, the gain shrinks to noise.</span></button>
+              <button class="ev-card dis" data-ev="d" type="button"><span class="ev-k">Follow-up year</span><span class="ev-t">Last year’s users regressed to their previous average scores.</span><span class="ev-back">Regression to the mean explains the “cure.”</span></button>
+            </div>
             <div class="action-zone">
-              <button class="act-btn" id="act-s7" type="button">Inspect an evidence card</button>
+              <button class="act-btn" id="act-s7" type="button">Reveal the overlooked evidence</button>
             </div>
           </div>
         </div>
         <div class="callout callout-q" id="s7-takeaway" hidden>What evidence would change my mind?</div>
-        <p class="evidence">Evidence · Nickerson (1998); Lord, Lepper &amp; Preston (1984) · classroom demonstration, not an exact replication</p>
+        <p class="evidence">Evidence · Simons &amp; Chabris (1999), “The Monkey Business Illusion” (local classroom excerpt, 0:05–0:41); Nickerson (1998) · the fictional evidence cards are a classroom illustration, not real data</p>
       </section>
 
       <!-- ================= SLIDE 8 : Confidence & accuracy ================= -->
@@ -730,7 +763,7 @@ h1.title{
         <div>
           <p class="eyebrow">Calibration · 08</p>
           <h1 class="title">Confidence Does Not Guarantee Accuracy</h1>
-          <p class="instruction">Feeling sure and being right are different things — but they are not opposites. Predict each claim, set your confidence, then reveal.</p>
+          <p class="instruction">Feeling sure and being right are different things — but they are not opposites. Commit to each answer, then reveal.</p>
           <p class="arena-status" id="s8-title-note" role="status" aria-live="polite"></p>
         </div>
         <div class="card-list" id="s8-cards">
@@ -754,8 +787,8 @@ h1.title{
           </div>
         </div>
                 <div class="s8-quiz" id="s8-quiz" role="group" aria-label="Answer each question, set your confidence, then reveal">
-          <div class="qclaim" data-answer="needle"><span class="qtext">In the sound clip you just heard three times, which phrase was actually recorded?</span><span class="qctl"><button class="flip-btn pred" data-pred="brainstorm" type="button">“Brainstorm”</button><button class="flip-btn pred" data-pred="needle" type="button">“Green needle”</button><span class="conf-wrap">Confidence <input class="conf-range" type="range" min="50" max="100" value="70" step="5" aria-label="Confidence percent"><span class="conf-val">70%</span></span></span><span class="qverdict hidden-row"></span></div>
-          <div class="qclaim" data-answer="false"><span class="qclaim-sub"></span><span class="qtext">People who are very sure of an answer are almost always right about it.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">Looks true</button><button class="flip-btn pred" data-pred="false" type="button">Looks false</button><span class="conf-wrap">Confidence <input class="conf-range" type="range" min="50" max="100" value="70" step="5" aria-label="Confidence percent"><span class="conf-val">70%</span></span></span><span class="qverdict hidden-row"></span></div>
+          <div class="qclaim" data-answer="needle"><span class="qtext">In the sound clip you just heard three times, which phrase was actually recorded?</span><span class="qctl"><button class="flip-btn pred" data-pred="brainstorm" type="button">“Brainstorm”</button><button class="flip-btn pred" data-pred="needle" type="button">“Green needle”</button></span><span class="qverdict hidden-row"></span></div>
+          <div class="qclaim" data-answer="false"><span class="qclaim-sub"></span><span class="qtext">People who are very sure of an answer are almost always right about it.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">Looks true</button><button class="flip-btn pred" data-pred="false" type="button">Looks false</button></span><span class="qverdict hidden-row"></span></div>
         </div>
         <div class="action-zone"><button class="act-btn" id="act-s8" type="button">Reveal the answers</button></div>
         <div class="callout">Confidence can be wrong. That is not the same as confidence always being wrong.</div>
@@ -827,6 +860,7 @@ h1.title{
       <button class="nav-btn" id="prevBtn" type="button" aria-label="Previous slide">‹ Previous</button>
       <button class="nav-btn" id="nextBtn" type="button" aria-label="Next slide">Next ›</button>
       <span class="slide-ind" id="slideInd">1 / 10</span>
+      <button class="music-toggle" id="musicToggle" type="button" aria-pressed="false" title="Play this slide’s background music">Music · Off</button>
     </div>
     <div class="progress" id="progress" role="group" aria-label="Go to slide"></div>
     <button class="icon-btn cue-toggle" id="cueBtn" type="button" aria-expanded="false">Presenter cue</button>
