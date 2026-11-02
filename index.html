@@ -74,6 +74,11 @@ button{font-family:inherit;color:inherit}
 .slide.is-active{display:flex;animation:slidein .35s cubic-bezier(.2,.7,.2,1) both}
 @keyframes slidein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
+/* Global control styling — eliminate browser-default button appearances everywhere */
+button{appearance:none;-webkit-appearance:none;font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--cobalt);outline-offset:2px;border-radius:6px}
+.nav-cluster{gap:clamp(10px,1.2vw,16px)}
+
 /* Animated vector backgrounds — one per slide, decorative only */
 .slide-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit}
 .slide-bg > svg{position:absolute;width:100%;height:100%}
@@ -83,13 +88,21 @@ button{font-family:inherit;color:inherit}
 @keyframes driftB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-2%,2%) scale(1.04)}}
 @keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes bobY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes pulseRing{0%,100%{transform:scale(1);opacity:.05}50%{transform:scale(1.06);opacity:.09}}
+@keyframes waveShift{from{transform:translateX(0)}to{transform:translateX(-240px)}}
 .anim-a{animation:driftA 26s ease-in-out infinite}
 .anim-b{animation:driftB 32s ease-in-out infinite}
 .anim-c{animation:spinSlow 90s linear infinite;transform-origin:center}
 .anim-d{animation:bobY 14s ease-in-out infinite}
+/* Phase 2: motion only while the slide is active (saves GPU, avoids hidden churn) */
+.slide:not(.is-active) .anim-a,.slide:not(.is-active) .anim-b,
+.slide:not(.is-active) .anim-c,.slide:not(.is-active) .anim-d,
+.slide:not(.is-active) .anim-e,.slide:not(.is-active) .anim-f{animation-play-state:paused}
+.anim-e{animation:pulseRing 9s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+.anim-f{animation:waveShift 18s linear infinite}
 @media (prefers-reduced-motion: reduce){
   .slide.is-active{animation:none}
-  .anim-a,.anim-b,.anim-c,.anim-d{animation:none}
+  .anim-a,.anim-b,.anim-c,.anim-d,.anim-e,.anim-f{animation:none}
   *{transition-duration:.01ms !important}
 }
 
@@ -101,19 +114,31 @@ button{font-family:inherit;color:inherit}
 }
 .nav-btn{
   min-height:56px;min-width:96px;padding:10px 26px;border:1px solid var(--line);border-radius:16px;
-  background:var(--paper);font-weight:700;font-size:clamp(13px,1.25vw,18px);cursor:pointer;
-  box-shadow:var(--neu-out);transition:box-shadow .15s ease, transform .1s ease;
+  background:var(--paper);font-weight:700;font-size:clamp(13px,1.25vw,18px);cursor:pointer;color:var(--ink-soft);
+  box-shadow:var(--neu-out);transition:box-shadow .15s ease, transform .1s ease, border-color .15s ease;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;-webkit-tap-highlight-color:transparent;
 }
+.nav-btn svg{display:block;flex:0 0 auto}
 .nav-btn:hover:not(:disabled){border-color:var(--cobalt);color:var(--cobalt)}
 .nav-btn:active:not(:disabled){box-shadow:var(--neu-in);transform:translateY(1px)}
 .nav-btn:disabled{opacity:.4;cursor:default;box-shadow:none}
-.progress{display:flex;gap:10px;align-items:center;flex:1;justify-content:center}
-.pdot{
-  width:clamp(14px,1.5vw,22px);height:clamp(14px,1.5vw,22px);border-radius:50%;
-  border:1.5px solid var(--slate);background:transparent;cursor:pointer;padding:0;
+/* Phase 2: visually distinct Prev / Next */
+.nav-prev{background:linear-gradient(180deg,#F3F5FA 0%,var(--paper) 100%)}
+.nav-next{background:var(--cobalt);color:#fff;border-color:var(--cobalt);box-shadow:var(--neu-out)}
+.nav-next:hover:not(:disabled){color:#fff;border-color:#1B3BB5;background:#1B3BB5}
+.nav-next:disabled{color:#fff}
+.progress-wrap{flex:1;display:flex;align-items:center;padding:0 clamp(6px,1.2vw,18px);min-width:0}
+.progress-track{
+  position:relative;flex:1;height:14px;border-radius:999px;background:var(--paper);
+  border:1px solid var(--line);box-shadow:var(--neu-in);overflow:hidden;cursor:pointer;outline-offset:3px;
 }
-.pdot[aria-current="true"]{background:var(--cobalt);border-color:var(--cobalt)}
-.pdot:hover{border-color:var(--cobalt)}
+.progress-fill{
+  position:absolute;left:0;top:0;bottom:0;width:10%;border-radius:999px;
+  background:linear-gradient(90deg,var(--cobalt),#5B7CFF);
+  transition:width .45s cubic-bezier(.25,.8,.3,1);
+}
+.progress-track:focus-visible{outline:2px solid var(--cobalt)}
+@media (prefers-reduced-motion: reduce){ .progress-fill{transition:none} }
 .slide-ind{font-size:clamp(11px,1.1vw,15px);font-weight:700;color:var(--muted);font-family:var(--mono);white-space:nowrap}
 .cue-toggle{min-height:44px}
 .nav-cluster{display:flex;align-items:center;gap:clamp(8px,1vw,14px)}
@@ -407,10 +432,17 @@ h1.title{
 .gv-time{font-family:var(--mono);font-size:clamp(10px,1vw,14px);color:#9CA3AF;white-space:nowrap}
 .gv-track{position:relative;flex:1;height:10px;background:#374151;border-radius:6px;cursor:pointer;min-width:80px}
 .gv-prog{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--cobalt);border-radius:6px;pointer-events:none}
-.music-toggle{position:fixed;left:16px;bottom:16px;z-index:60;min-height:44px;padding:9px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);font-weight:800;font-size:13px;cursor:pointer;box-shadow:var(--neu-out);font-family:inherit}
+.music-toggle{position:static;display:inline-flex;align-items:center;gap:8px;z-index:auto;min-height:44px;padding:9px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);font-weight:800;font-size:13px;cursor:pointer;box-shadow:var(--neu-out);font-family:inherit;white-space:nowrap;-webkit-tap-highlight-color:transparent}
 .music-toggle:hover{border-color:var(--cobalt);color:var(--cobalt)}
 .music-toggle[aria-pressed="true"]{border-color:var(--cobalt);color:var(--cobalt);background:#EEF2FF}
 .conf-range{display:none !important}
+.s5-mini{min-height:40px;padding:6px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);font-weight:700;font-size:clamp(11px,1.1vw,15px);cursor:pointer;color:var(--ink-soft);box-shadow:var(--neu-out);-webkit-tap-highlight-color:transparent}
+.s5-mini:hover:not(:disabled){border-color:var(--cobalt);color:var(--cobalt)}
+.s5-mini:active:not(:disabled){box-shadow:var(--neu-in)}
+.s5-mini:disabled{opacity:.4;cursor:default}
+.conf-row{gap:8px}
+.conf-q{font-weight:700;font-size:clamp(11px,1.1vw,15px);color:var(--muted)}
+.conf-chip[aria-pressed="true"]{border-color:var(--cobalt);color:var(--cobalt);box-shadow:var(--neu-in);background:#EEF2FF}
 .s5-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
 .s5-mini{min-height:36px;padding:5px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--paper);font-weight:800;font-size:clamp(10px,1.1vw,15px);cursor:pointer;color:var(--ink)}
 .s5-mini[disabled]{opacity:.45;cursor:default}
@@ -444,16 +476,16 @@ h1.title{
 
       <!-- ================= SLIDE 1 : Title / opening ================= -->
       <section class="slide" id="s1" aria-label="Slide 1: title and opening question">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><circle class="bg-orb" cx="820" cy="90" r="180" stroke="#2547D1"></circle><circle class="bg-orb" cx="820" cy="90" r="120" stroke="#2547D1"></circle></g><g class="anim-d"><rect x="60" y="430" width="140" height="140" rx="24" fill="#0F172A" opacity=".04"></rect></g></svg></div>
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-e"><circle class="bg-orb" cx="820" cy="90" r="180" stroke="#2547D1"></circle><circle class="bg-orb" cx="820" cy="90" r="120" stroke="#2547D1"></circle><circle class="bg-orb" cx="820" cy="90" r="60" stroke="#2547D1"></circle></g><g class="anim-a"><rect x="60" y="430" width="140" height="140" rx="46" fill="none" stroke="#0F172A" stroke-width="3" opacity=".05"></rect></g><g class="anim-d"><circle class="bg-orb" cx="120" cy="80" r="46" stroke="#EA580C"></circle></g></svg></div>
         <div style="display:flex;flex-direction:column;align-items:center;flex:1 1 auto;min-height:0;gap:clamp(6px,1.4vh,16px);justify-content:center;text-align:center">
           <p class="eyebrow">Perception · 01</p>
           <h1 class="title" id="s1-title">Can You Trust Your Own Brain?</h1>
           <p class="instruction" style="max-width:min(90%,900px)">How perception, attention, memory and judgement shape our reality — demonstrated live, on this screen, with you as the participants.</p>
           <div class="stim-card" style="width:min(92%,860px);display:flex;align-items:center;justify-content:center;gap:clamp(18px,3vw,44px);padding:clamp(10px,1.6vh,20px) clamp(14px,2vw,28px)">
-            <svg viewBox="0 0 96 96" width="72" height="72" role="img" aria-label="An eye whose pupil is a five-pointed star." style="flex:0 0 auto"><circle cx="48" cy="48" r="44" fill="none" stroke="#2547D1" stroke-width="4" opacity=".85"></circle><path d="M48 26 l6.5 13.5 15 2 -11 10.5 3 15 -13.5 -7.5 -13.5 7.5 3 -15 -11 -10.5 15 -2 z" fill="#2547D1" opacity=".9"></path></svg>
+
             <p style="font-weight:800;font-size:clamp(13px,1.5vw,22px);color:var(--ink-soft);line-height:1.35;margin:0">Ten slides. Six live experiments. One question: how much of what you experience is your brain’s interpretation?</p>
           </div>
-          <p class="credit credit-inline"><img class="avatar" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5Ojf/2wBDAQoKCg0MDRoPDxo3JR8lNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCACgAPADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDAgZWTKSBsikVQpII6mq0SjGPKcAd1HSpNjE/upmyOxGa8W59DY1rPWNX04D7DqN1EoPCB9y/kciszWrvUdT1F9RupEe5dVVjs2ggDA6UZuQDgI4HXBwf61FPcyRIWMLs2Pu8VXtJWtcj2cL81tT1HS/idprwxx6hZ3Nu6qAWTEi9Pbn9KrfEjxDo+seDZo9Pv4ZpRNE3lZ2vjdz8p5rzaKeKVRuUKSOh7VJsQsCAMetb/AFuduWSOb6hT5lKLHLC/luVIKsAc56cVqXMI+x2+f88Gs9RuDKHXhegHNaOspLHYW0sBxlVzxnmuZO51tHQfDXw/pWr2+pxarYQ3PlvHsLjlQQ3QjkdK19Z+FmhS280ljJdWjqhYKsm9eB6Nz+tcb4K8aHw3Pdfa7M3ENxtyY22spXPY9evtXoNp8SPDV9GySTzWjMpGLiEgfmMivSoTp+zSb1PJxVOr7VyinY8l0Tw1eeJrRYLCKOSS3XzGRpNhweODWbq3hPVdKYm7s7uBR3kiLJ/30OK9B+DMqJqVxEWAZoGABPXDCvXSOMHofWijTUoBiK0qdSyPk0R3KElVBx1MbVMl/LF8sjEDGP3i/wBa+ldQ8MaHqOTeaVaux6uE2t+Ywa5vUPhXoVyCbSa7tGPZXDr+TD+tN0GtmSsWn8SPGtKK+UzbgwVuCvvUmosGgkI9B/OtvRfDFxc6jqGi2Bia4guJFBc7AwQke+OlR6/4T17TLSeS802YRIuWljw6gepI6fjWUIuzN6kldfIy9oLxMB0UceuSK0Ft3jtGBIZtx6+n/wCqqexttsRwG2jP410EsBYyRgfdXIriueg0cxe2kbrIpQHCnBIqrFZCa1hIkaMgYGK2WAyeO1VrZreOzg89wmSQCf5V2Saclc8+EWoysZ/2S7hztMcg9CNpqJiUP76GRPcDI/SugmeKWP8Adsp9CDmqUyk5CjrQ6cGCrVI+ZRUoEWQHKt93PemsysNzRgH2qWO2EumxB1B2uw+nSk020V7t4yWxsyFJrF07R5rnSqt58livLGoUuvC5xVbawYMjFT6qcGti9swheMOQAN2ayJYpImYtG20fxLzShd7DnZbmnaa9qVsu1ZywUch+a04vGEigC5tQ/uhxXLJIGUMrgq3TNBznOOPatFOSMnShLodvF4o0ubHmM8RP95c1ZW7sLofuLqJ/bdXnrbSMcg+4pgKheCQ2eorRVWZSoLodlaOAZTkjABwfrWhOltcJFKWAdvu5BBI6f1FW/Fvhm08M66lrY3FzJbzW4k2TuG2HcRwcdOKzI7xYrZpJCSIxzxnp0/pXJKDhPlZ3QmqkOdbGnqWnQx2vmIvlvxyprOFi8mQkgLAdGHBrbvpVbTsnG3CnP5VSjVN4ZTgBegPGKze5qtjEaMg/NDkeq4NNbycAAbD7jFRHUbYswSZQ2T8rHB/WrMUpYZXnjsaHFrcFJMpXDFXDpK3Ax8p4wauDW57yzjsJLcJJGR87NncB+FUNUYtGyLECxI56GrFusfyCUurgAEk9/rT2iG8iPFw0jJNApA5Dqad5QAB2Mp75rXt7LfbGUTEHODkZFL9hldGIMbbBzg9eKm5VrGKbdC+4FgfqavWmveINLlQWetXSRkcK8hdc/RsipJdOuYhkwSAEZ4GaqLECd4yx/SqjUlHZkSpRlurnW6f8TPENuoF5DaXYHUlCjH8Rx+ldDZ/FewLBdQ025gPdomEg/Lg15uqFV3bTimuisAZIyOM8ito4qoupzywVF9LHXeDtWsF8cX2oPOkNpcXMrpJMdnDAkZz0r0bxTLBeeENYNvNHKjWUvzRsGH3T6V4TEYWyhBQg4+boal+zsqt5LsoYYIVsZHvjrVwxXKmmtyKmDU2mnsQQbmsYR22g5+hrq4VzM5YfwiuT8lokKIxTj5cNW7Lc3loYlYRs/lqHwDgmua6OvlZ1N78MLlgJLDUonyM7Zoyp/MZ/lXmx0prvSo03sGjlbJX8q9d034l6WY0jvrS7t3QBWZVEi8d+Dn9K4Tw/NalrhZpEjjeWQoZDgEFuOvsa7Zum3HlZ51ONWKlzI49tCvIjmCYE++VNQyLq1qf3sLuB3Hzfyr06WyikjJTawPQqc1m3NiFxitFFGftJddTj9JLT2BPIxIeop9nG66soQZ3RnNa1hCBZyg4AWdx+tZ4Vh4gtGgf5QrBgO9Zb0mbbVok+ow5uMHumMfhVB490bdsgiug1K33XSEgj+nFZFvbO8ksROerJk/8AjtZUJWka4mN4GbZ2UI0+HMYbcSTkZ5pH0yFvu7o/91qleWSy0+LKE/vGBBB44FNj1OFxyp/DmuiE48upzVKc+a8StJpc45jkVvZhiqZhfy2fyySrbWVRn8a2hfRsMK6j61VtyD5/r5hPB7VMlHSxUZTSdz1j4qY/4SCxz3tD/wChmuRs4gYXDICHGCD711fxNureXXNMlgnilQwMN0bhh972rnbPlpI8EHOQfasMT/FZ04T+AhdemNvoCMvGSike2ao2lzGsgtt3znp9RVjxh8nhotzkMvT61maegS8RnwXdd+T/ALtZNLlTN07yaPfbrTdP1CMC+sLW4BUf66FW/mKwLz4deFLolhpS27n+K2kaPH4A4/SunhOYYz6oP5U+vbsmtUfOpyi9Ged3fwmsWJNhrN/AeyzBJl/kD+tZNz8MvENuSbS/068XssitC39RXrQp61lLD05dDaOKrR2keFaZFcIJbS9iMM8E7I6B9wyOOvcVpWyLHHKgABX1PbFM1AEeJNUHTF5L/wChUSFQl1I3OIifcYBrx5q02ke7CTlTTZqKf3AdmBVlJJPUemPbrXnOqJcPDH5LmTbwSOp/Ku00wzT2tqJJPMR9mUYDlTjINd5efDvwrc/8wtYGznNvK8ePwBxW9Ci5u6exz18RGlZSW58/Wl1dQyATPI0JblWaujaISxErdhYwu5mYD5RXod78IdIn5tdS1CDHQOVkA/MZ/WuM+Ifgi48LeHzc/wBqx3EMkqwhPIKOc5PXJHatamGnKSZnSxlKMWrs4nUvEEzv5NntWJeBKV5b3waqR6lfjkXb+vGAP5VSkj5ByOPejdgeldMaUIqyRxTr1JO7Zpwa7JHMGuy7DpuH+HSutOsf2ltlt2jOAM4B7djmvOpMOOG/Ouk8JJHNHMhHQggZ6VhiaMVHmWh04XETc+SWp0LOjyl+UyMMBzzQyowxvVvrSeXb7hF5oVj0BPX86ntrHerETg8gcjivPaPTTRWVNpzCxUjr5bYx+VOa+vlBT7VJ/wACANStpF2cPbBGUtj5Xx+NVZ1uLdwlwGjk64IyMVSlKOzJcIy3RFFLKkMsbfvC8m/OfzpLaTydSgnkQ7Iyd2OTQt2hcqyqWA6YxTnnjdCQhz7Gq9rK1iXRjdS7GtrF5FNCLm33MqMAw24NcrfzTJd+dal9hxlE+9+FbMTq2myqhYEMMrjnpVNUkXa4b5uwJwRTp1OSVyatL2keVOw1rtrzTpGeLyZkckmXo+OMcdDWY5jJUXEAVmGQQM5/GtSePzoWhlQhHfecc8+ufxpyXe21js7mBLiFSAsq/LLEPb14renWhsctXD1L3Rj/AGa3kB8t3U/XP86sQw/Z9Pu5i6sIyoB2461v6MbCyl+2afdI9zE25TcJ9zOQOPUZz+FZ81yzSX0ztHdyOVlYmPYrtkdFFVKUXa25EI1LPmWlixrfh7WfD99b2+p28UbSjdHJDKHUgHn3rZs5Cyo6nnZhgR+NdZ8WIi+paUVGWEMuPzFcYjGJZcqSjqBge/8A+s1jXSjU5UdeGk50lJ7kvikGXwwo6ltpqmYdtvHMv30iP54q/rCEeHrReuEX+Vc9Z6hsmMYyyOOR+FZu7ibJa3PQ7L4oyxRRpd6LnaoUtDceg9CP61sW3xN0aUDz7W/hPf8AdhwPyNXU8C+F7uzgeXR4Fd41LNEzRkkgc/KRWL4h+HGiWuk3t5YTX9tLDC0iBbgsuQM8hga9K1ZK90eNfDyduVo6C28d+GrgDbqaR5/56oyfqRiti11nS7vH2bUbSXPZJlJ/nXjnhbwvJ4i3QR3otZIY9+5ot4fnGCMjFa1x8MdbUfubnS7kf7YeM/yNKFarJXUblVMPQjLlcrMg1Nj/AMJJrAI4+1OVOeoJqpbs0gvVOcCM4z9DVPS9Pu7LWbu1vIEieBjE2yTcCwwePbmtaWHyVupAOWiP6A15s/4juerTsqaS7DNBk/4ltg/bylNez9ea8T0s7PD9sRnIg4/AVoWfxS1KMKt3DZEgAESI0Tfqa68NVjByucWLoyqKPKeu15f8eLkSaBBYIHMizJO+B8u3DL/Ortp8UYZMedphPvBcBv0IrL8Y6xo/ieKOTZcRSQxsCsowGz6EE5710SxEGvdZzU8JPm99aHF+E/DcEkKS6nApDDci55wfWtO68EWl3O0zyeVGeI40XAA9/U1ev7LUorMXOnSSeWqgbYhlgPb1pPDd34kuVma8sjJDGpKNKgjZse1cjlO/MmegqcElFo4rWvCDWcoS3YyBj949q7f4R+BtO1XRNQudXhkLfazFC8czIQFHPQ+p7+lYEmv6rq161vHZxxBCcoYyWA9Sele2+C9IGjeHLW2481wZpSO7ucn+YH4V1UXKStPU4cSowtKGhzd38KtLkH+ianqEHoHKSgfmM/rXFXOiXPh/xBc6c9wlxbxhJPN2FGJPI4yR617pivKfHccieLbsoWG+1ibLDjgsOKjE04RhdIrCVqkqnLJ6FaaP5AQSAJAeKzNUtL+4nZ7TTr26iVFBlihLjOORxVm3kJuLtSxIBQgE9MqP8K9E8HXsMGhStPIqrE5ZjnkDA5x6Vx0aSqT5ZHdiK0qUOaKPGLkW4KrfxGCQH7s8ZQg/iBTPLtnlTy9pDH+E1rePfENzr2sqySRi0iJWJF6jnq3qe/41h6k8t3cw3N2kfm7kXeI1QnHsMZ9zVyw8VezMoYyTklKO5qNbL5c0MDFHJQbiM7c96hvNK1G1XczwTpnaCQUJ/nU8JkYzTEHaXTH0GK19YeKC3LurBd64xz3Pb8a5r2R221OWO9DtktpFPrGQR/OomMJOJWZfTfGR+tTzavpbI0QmZHVvlZkOKlaa1eJJFnTY+drMcbsdcZptNboSknszMS3jLM6XCPk8DjinKHVuVB+lXUtoniA/dvgcdDUMlmijAjZeOoNF0Fj0nxbdHVbbw/fY+ee1Z+PU7f61zcsexnyMBhkV0/ivTv7JsNDsRL5n2a3ePzMYzgrziubvLtAsYIBdskenvW+K/iswwtvZq22v5hquG0WIZ4CjP5Vxloyx3MTqB839eK7K+QHSIscArXLajC1ikQhXjb96sk9LHR5n0Xp5zp9qf+mKf+giqviQZ8P6kP8Ap1k/9BNT6S2/SbFvW3jP/joqLX+dD1Af9O0n/oJr2fsnzn2zifhoNuqXHbNt0/4EK9HBrzj4dZ/tqUnjNr0/EV6MKxwv8M6Mav3p5VrgEPiXVZMEn7TnA/3VqtdsWjkA5zE31HFXfEiE+IdUA6/aB/6AtZs3BYbsbo2H6GvMrfxX6nr0F+5j6Bp1nHdaDaxyg42dmI/lXr6Qwz2sQmhjkXYvDqG7e9eV6CM6PDnsuK9XtSPscDHp5a/yFdeCfvSOHMFpE8z8b6bYW/ie3ksrW3h3Wp3+SgXLBj1x3rpX8A+HbiwEkdmYJWi3b453UbiM5IzjrXN+Nby0jv7WVpYUCrIGKsCT8+eQOc1j+L/GX/CRwWegWEklrYyBBcyltrzY/hHov860TiqknJCVOrOjDk8x1rrcthasS4KpxwM+3brVu28Z2toSLhZrlZFz5qD7pP8ACV7VzOombR7hJ44jJa5G9F6r9Kgv9a8OXatL9pu1cDiKSJWyfTJGR+dYRjd3OxyVrNnSW+oXGqymy0iFLi5n3eWVZRwMnBPTirNxqHjvRoHnu479IYx8zERyqPTpk15nb3byXSyWrNCkR3KUONrdcgjvW7Fr+qNC8U13JOr4yZmLn8Ca1ULLVtMl0p1LNJNeZ1tx498R2qqtybdldQwcW7Aj8RwDWTJ4guNd1lJbl4mfy/LIjbtyen1NLZ6/5sPkSL5AwMSKd3I9RSaOP+JxcFdkgK8OB2qKil7G7lfyM4w5K/LyW7MvxW4W6ucfeMaH9DVae+ntptilzEVUsi8bsE8Z64rTyGuZJEHOwceuM1yviSQRXMLkNyhHysRg59q5aTfNodNdR5HzbEd5HDcXRkSIxoTyoqndxFZA6DKqwO3OcDNW/Dym7lkEkkrARNgO2QGxwaxZry6WdIy6MW7lf8K6lKTurI45RprlldnWW21rKQg5+T14BFS+LoRLpStkj51PBx/nrVfT1WPR2XOWKN+eTWjrqB/D+7rgIw/SuWGk0dtX4GefT2qL0FXJ7JZdGtP9l2AHpTbgfyq6nOixYHKzkfpXbNu8WedTiuWS8jn2tTG+AxGPQ4q9q5njuVaCV0XylGFPHT0pJh++I9quakm2K3kbHzwg/lxTdnNXFG6pys+x6X8Zbqa2/s3yFJ3JLuIOMDK157p1+91sLRgIrbQU9evQ16N8XoxL9gTu0UoHPfK15r4ctgks4ZyQhGfTPtWOJ5eaXfQ6sHzKnHtqdVeD/iTxn0jGK5l7uS8iWzZU3ksA56gCt66nC6XCjHO5ACM8istIkhVJXjAx8rE9ST3rkTS3OyzPddF/5Aun/wDXtH/6CKNbGdGvx/07yf8AoJrMtdctLXRrJY282UW8Y2D12jvWJq3iC+linTcqRvGy7AOxGK92KvE+cfx/MqeAHWHVZJJWCqLZsn8RXVyeJ7NFfajs4ztGOvpXndmzR3A2kj5OxrQJ+XJrHBK9L5nRjv4vyIr+6a91O9umQKXlXgc/wgVVlR3X92oJANLuw1wRnPmL/IUM0oyY1B5wwJxx3ry8R/Gl6nr4b+BH0J9CBOlqp4OMEfjU/jDx5PDFHpejuYmjjCTz4BJOBwvpjnms974aboE1wRhxlUH+0TxXAJM0rZbJOeSfWtcO5LmaNHRhNpyV7E8heR2d2LMxyWJ5JqKWBZEww/HNWlXIpSgPWtbnXyK1jJkN4i+XFdTBP7vmcVUGnSO+6VixPbqTXQKi5wABUqQqOQMtVqbRg8LBu7M23tJFUDAVfQVeSHaKsBcCkZvSi9zdQUUM3iMitPRbxIrrk4BypNYsp5B96qW9w4VmU/MjZ/Ck48ysyJW2Z6TZfNO6g5+WszxFpsTzRGSTaOeBUvhm8S9hEiEbhHtcdwR61Brl6r3cecnZkHHY8YriinGdjlrL3GZ3hmIQ38yM2QSwBPcYrGkWGS7jZiC5bBAGMCtrQR5moyo543Hg9wawMm31Qq4UgSFcn64rph8TOKov3cX2Ow09UbTSOP4wKuXqeb4WY46Qj9MVQhUpppZSARux+JrUt5BL4Ykjx8wiYGuaO52VNUcDcLxmrkAzo7AdpQaguACgqzZZbTblR0Xaf1rtqbL1PPpbyXkZdyn7+rt9GX0+xlPQqV/I1Fcr84NTGOT+yo3dsqspVR6U5fFFkw+GSOl8WyT3bQsJHLIGI59ap6RYG3sWkkQKX9O/vUul6pFrDJIi7WVMSIf4TmtOdwsKxiubFv8AfOx24OLVGKfn+ZlzWKC2WRiSScqCeAKq3kMs8QVRwGBNX7mTNghHUf40q3MKBdwIDcDiuZtnWjZsmJs4Ac8IB+lF0fkcf7B/lTLPd9liK9NooumAWTI/gP8AKvoY/CvQ+Zl8fzKcDBrlQOu2tBj8vTFZlm4N2h9U/pV5z8hI5rnwT/dfM6sev3vyIYiGkuO/zr0+gp9u4dn7nBzVbT18rz0J5Lhj+VZuoapFpQmhiWR7h4ztxwBu6GvLrJyrSS7nr4X+BH0MbxTqUk0y2KCUwwkkqhGGY981lWhIJBTb7VHtuGJ3OQPU9aZHMqTEIe3X1NdcY2jZG60d2bKttTOOe1GfaqsUu/dk8LgVMJVIxnmlY3vcGcjp1p8Mrn7xzVdzzT0OBkmmK5qWEkS3cDTorRbxvDdMd66TXLHR49NluLe6MpU7YozAqHJPUMvBA/GuHN1tOccCopb1VYbG2sfUcGri7KxlUV5KV7WLkqAk4HQ5rDMzWl42V3oScj1FM1G+1GGPEgj4/jXuKbZTRS2g+1EkE8ODyDVKNlcynWjKXKtGdJ4Tu/I1mJoJFMEx2SITg89D+Brd1m1C3izHjc2D6VwEf2VX+V3nz0TGP1rqLHURJZxWl0HaQNxgk4HYEmsKtO8lJETd4M1bCBU1ZpI8ANjgVhahHCl5MQm6Tzm+Zug59K1YrjyL2IRDDhRu5z3qsth/aOqzRxP5eZGZiw4AzUw+O5xyTdJJGnKkk2mCOFthLZ3Yzg9aZ4evZmjuLSdWJdWJBGPLP/xJrUsX09YmVvOMaNh5SwUBh6DvWgltZC1NzbxFXYlIi2CX9ce1QoNJnS+jPPph+75q3pK7rS8X1iz+VQXAGCp4IJqzpA5mTH3oiK6anwXOGj/EsUbleFqcNnSDH6TZ/T/69R3XKgj0p0A3WE3+ywNE+j8xU95LyJNMQabIxi3SLKw3diOa6C/cBEOe+a4zw35167yyzSsEIG0tkV1d2222Un+Hk/hXHiL87vuehQa5FbYWR0ax98Hj86pTXKT7Y4VDFeDg9P8AOKS+cLpQlGcAZ4+tRwtFb28s6FSXcc/pWTWhsnqa+n6uRBGj2cwKKASDkGpZ9RV1fNtNgjHNUrPToHRXL3ALgE4nYDn8ac+mxliBcXg9MXDV7EYYmys0eJKpheZ3TGWV0Y5t8kLnGVwgzx2NaQ1CEKPlk/Ff/r1T/sxAB/pN3/3+NRyaf8jFbu6Xjj97UwpYilG0Wh1K+GqyvJMpalrQsb0zRxy4cEfMvBOOP1rjb28uprnz55yWJ6k/p9K2NUXbdMjTSSlerO2fyrDvuCduMdCD0NZxj7zb3Z6UFairbdCG41GTZtII9ataPp15qzobZNsKt88rDgfT1rU8CaFb6tdTTagoltoRhYiSCW98dRV/WZJdPvpbeweSKGNgEijbCqMdAKTqLmcIbmUpyS55vQxI2w3l5/jOfwq1HzHk+tZ8LH7Qc/7Rq+vESe9DR6FN3VyRRk+1OYYJpqPxzTt4wQMUjREDDLY7GqzKvMUoyueCOoqy5xzxUN18rK46Ec1SM5ENynm25QkkAYGawnhaOZo1JAB9cV0Qwy8c5q1Z2cepQvYswVjLgN5YJXp369apT5TjxVNNKRg2eIziP73ds/5xXrvgzSbex0yO5lAe6uF3u7DJAPQD0rz7U/CepadMY4lW4jZsI6sAW9sHvXTaXrl1bWUUV5azxPGNh3oR04rOpNSV4sUbxXKzrLuztGcym3iZvXaM1iX13JGwjhiBBBXCis278UEA4wPqawbnXLqadZIxjB+8TiojBmc6sUdVBpF1dpvuH8teyHr+VatjKmnLDbIzF1zmSZuEz/cFc7ptzczW5lmuHYvnAU4wKuRReZN5iyMpAHPfmp9ok7Gtm43Rj6goF1P82f3jckYzzUujsBdDPRgRUuuBZr2aUHk4yc9wBVXTPlvIxnjdW0taTOOOlZepBcqQTnoOKdaE+RcKOQVBqW+jHnSoWKgbsY7nPFN0oYaZSPvQmif8O/oKn/Ft6lPwOu63ufTcK6W6O0Y44xxXN+AZF8i4iH+sDqT9K6HUW2tXLiVarI7cK70ombqEn/Elk9wOPT5qzvMDaVAuf4QT9ak1WYrpEoU9EyPzqhp6sdOjYkkBRSUfcv5l837y3kd5Y4+xwY6+WD+lOBweTUVjJGNPgzImfLGcsPSkEkZzmWP6bhXtwkuVHz84tzYs80qnMcYcDtnGaoXWrRxZSaJ1JBxxV9ZoBlmmjA6fep1npdrql4olIeIfMyofvHtz6VnVnyxbua0aXNNJo4KeQszN61TjtH1K/hs4+C5+Zv7o7mug+JcVlot7bx6YnlM6kvHkkH356VT8KSxrBNqEiHzGG0ADoPb8f5VxSk4w50e17SM5ezR0fhGGKzNzbRcrHJjJ6njqaytcIbXZlJzuK9fpVvw3JsvL0sfmMisfxUVDqdm0urSTlgA4GOD6Vz03+9bb6f5GWIi5UUkuv+ZzYUC7kAPAB/nVxzjaB2FMuovJvZlzu2hRn1prN+969K6dzspN8iuSg+tPB4qDILdc1IxwKLGtxkvfnHtRHIrr5cgyp9e1ROSW5JoAbtzTIvqTRwbH7Y7YpdNLRagJRnCygkZ6ilgLFSzDpxVvR7YXNyVKgkDd+RpStZ3M68OaFkdTrd2N9q54xOh5/wB4VY1eAT2l0SR3I568Vka1lrVh3TaRk+4qbUbgXMhO8rtIAXPXKj/69cMVohS3Zzl1bJ9nYgZOeuapImf4guBnmuklsR5bIUbn0NQPpKbeN2Mdj0rrjVh3ON0Z22JtDbdZpt6BiP0rYtYvMSVOQxi4I7EGs3TrcWgjiIIVsMCc559a2dKlSSRhzhlbH51yzfvNo6YRagkzD1OMQStGCTwCSe5xyaz4JxDOrucKGGfzrZ8QqkdxG2M5Ug5Hp/8ArrGlVGUjapB9q6I1ouFmc0sPLn5kWtUJ+0vtHU5+nFVLaUxzKFPLZX9Ka80jPyxYnjLY6UxiPlOAGVsgjqDT9ouTlY/YSVTnRRs7G80kpqELeZGB+9RVwSvfHrjrWze34lMLBsiRcrjuMZrq7eGJLGNNq/KoBrjPEjGK+RY0cqc/dXoCOKmo3Vd3uaQiqKstinqkhbSDgcEAfrS2SyLaRoqHaAM57+9MugJNMSABtwI5I4rRtlWKNFCbjgDOeKiWkLLuVHWd32JgqwzfdBBUZHvVpXTI4Az2AqE5kJ/dgfhTCNoBH3u/tWRpp2LoOF4GT6HtXX+GLMW9t5jj525Oa4W1kkSeN5ZgY1bLAL1HpXXanqyWWn2/l7y87qqBB1ya0jGzJvc5/wCJGkw3GoR3DrukMeEJbAFYludklqibViMIUhe5ANdJ4vMd1cRo5ZvLXs2OTWLDYRuisu9SvTDninKV1ZiUbO6ItOBGp3mwsu4DGPoK3l2iMMw3NWDp9sE1eRZpC6lcrkkVuOoK4Re3aspxuy4Ssjntch2agzkcSBWH4DFZUXLE1qa7JIJyjqRhBtJGOtZKnaeTXZTXuo2T2Juh60rEkdaYBjp3pfvDrg1ZTegwjPcCnx4+6DnPpShA/GPzFWIUC/N5fzdOFpiS1EmxHGFHWrGkNPDc5hGWKkCqks0SHfM446KOSa0fCUkGo67bWcrm0jlJVJmXcu48AH0z60nFyi0RUnFatl7WZS8CxiKRn2jecdDUbrJPqUlykUhikC4HAxj616L/AMK7PziXUwQx7Q9P1qSL4ewRhc6jK2Oo8sDI/OsVQqJWSOF4qk3e5wZnux923BGP42AP6VTim1SW7YNFCIMcjdivW7TwlpVvEY5Y2uCTndIeR+VRnwTpDPkfaUGPurLx/KmsNJdES8ZB9WeZPNMCpkVTjphv/rVY0e4P2pS2BncOOccV6M3gfRW4aKZh7ymuJ8Q6bBoPiMWtmH8pkWRQxzjPB5/Cs6lCUI3ZrTxUakuVGf4oMbJAZXVSobaD1Y8cCuWV7sKwAhyOnyn/ABrpvEiCSG3Zh91iAf8AP0rDwqkVph6cXC7McVVmp2joJdRypHbSoUxJEGYFc4Peqs5nQFw8b4xkbMVqyndp9tx0Vl/I1RnKgHjhlyM1pThGVO9tTOtUnGra+h//2Q==" alt="Portrait of the presenter, Lalit Mehta" width="44" height="44"><span>Presented by <strong>Lalit Mehta</strong></span></p>
+          <p class="credit credit-inline"><img class="avatar" src="data:image/jpeg;base64,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" alt="Portrait of the presenter, Lalit Mehta" width="72" height="72"><span>Presented by <strong>Lalit Mehta</strong></span></p>
           <p class="evidence">Opening slide · the demonstrations that follow draw on Simons &amp; Chabris (1999); Rensink, O’Regan &amp; Clark (1997)</p>
         </div>
       </section>
@@ -556,8 +588,8 @@ h1.title{
       </section>
 
       <!-- ================= SLIDE 4 : Attention arena ================= -->
-      <section class="slide" id="s4" aria-label="Slide 4: inattentional blindness — count the white dot’s bounces">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-d"><circle class="bg-orb" cx="120" cy="100" r="70" stroke="#0F172A"></circle></g><g class="anim-b"><rect x="700" y="380" width="200" height="120" rx="20" fill="none" stroke="#E11D48" stroke-width="3" opacity=".06"></rect></g></svg></div>
+      <section class="slide" id="s4" aria-label="Slide 4: attention task — count the white dot’s bounces">
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><path d="M-40,470 Q180,300 380,440 T780,380 T1020,300" fill="none" stroke="#2547D1" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round" opacity=".08"></path></g><g class="anim-e"><circle class="bg-orb" cx="120" cy="100" r="70" stroke="#0F172A"></circle></g><g class="anim-b"><rect x="700" y="380" width="200" height="120" rx="22" fill="none" stroke="#E11D48" stroke-width="3" opacity=".06"></rect></g></svg></div>
         <div>
           <p class="eyebrow">Attention · 04</p>
           <h1 class="title" id="s4-title">Count the White Dot’s Bounces</h1>
@@ -586,8 +618,8 @@ h1.title{
               <button class="vote-btn" data-n="10" type="button">10 <span class="vc" id="vc-n10">0</span></button>
               <button class="vote-btn" data-n="12" type="button">12 <span class="vc" id="vc-n12">0</span></button>
             </div>
-            <div class="row ask"><span class="k">Ask</span><span class="v">Eyes on the arena. Count the white dot’s wall bounces only — each hit flashes green on the wall edge. Keep your number secret until the reveal.</span></div>
-            <div class="row reveal hidden-row" id="s4-reveal"><span class="k">Reveal</span><span class="v">The white dot hit the walls exactly 10 times. Now the honest questions: did one of the black circles quietly turn into a square? Did an orange star travel across the arena?</span></div>
+            <div class="row ask"><span class="k">Ask</span><span class="v">Eyes on the arena. Count the white dot’s wall bounces only — each hit flashes green on the wall edge and clicks. Watch nothing else. Keep your number secret until the reveal.</span></div>
+            <div class="row reveal hidden-row" id="s4-reveal"><span class="k">Reveal</span><span class="v"> Now the honest questions: did one of the black circles quietly turn into a square? Did an orange star travel across the arena?</span></div>
             <div class="row ask hidden-row" id="s4-askblind"><span class="k">Ask</span><span class="v">Hands up if you noticed the circle becoming a square. Hands up for the travelling star. Watch how many hands stay down while everyone was busy counting.</span></div>
             <div class="row why hidden-row" id="s4-why"><span class="k">Why</span><span class="v">When attention is busy, unexpected things can go unnoticed. In one study, 20 of 24 radiologists searching lung scans missed a gorilla image — and 12 of those 20 looked right at it.</span></div>
             <div class="row careful hidden-row" id="s4-careful"><span class="k">Careful</span><span class="v">Not everyone misses these, and it isn’t carelessness. Not noticing is different from forgetting.</span></div>
@@ -602,7 +634,7 @@ h1.title{
 
       <!-- ================= SLIDE 5 : DRM words ================= -->
       <section class="slide" id="s5" aria-label="Slide 5: memory word list demonstration">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><rect x="760" y="60" width="150" height="190" rx="18" fill="none" stroke="#2547D1" stroke-width="3" opacity=".06"></rect></g><g class="anim-d"><circle class="bg-orb" cx="100" cy="460" r="90" stroke="#94A3B8"></circle></g></svg></div>
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M60,470 C220,430 340,500 520,455 S820,470 940,430" fill="none" stroke="#2547D1" stroke-width="3" opacity=".06"></path><path d="M60,495 C240,455 360,520 540,478 S830,494 940,455" fill="none" stroke="#2547D1" stroke-width="3" opacity=".04"></path></g><g class="anim-e"><circle class="bg-orb" cx="100" cy="460" r="90" stroke="#94A3B8"></circle></g><g class="anim-a"><rect x="760" y="60" width="150" height="190" rx="18" fill="none" stroke="#2547D1" stroke-width="3" opacity=".06"></rect></g></svg></div>
         <div>
           <p class="eyebrow">Memory · 05</p>
           <h1 class="title" id="s5-title">Memorize the Words</h1>
@@ -639,7 +671,8 @@ h1.title{
             <div class="action-zone">
               <button class="act-btn" id="act-s5" type="button">Start the word list</button>
               <button class="act-btn" id="s5-auto" type="button" aria-pressed="true">Auto: On</button>
-              <div class="s5-controls">
+              <p class="arena-status" id="s5-speech-note" role="status" aria-live="polite"></p>
+                <div class="s5-controls">
                 <button class="s5-mini" id="s5-prev" type="button" disabled>‹ Prev word</button>
                 <button class="s5-mini" id="s5-pause" type="button" disabled>Pause</button>
                 <button class="s5-mini" id="s5-next" type="button" disabled>Next word ›</button>
@@ -654,7 +687,7 @@ h1.title{
 
       <!-- ================= SLIDE 6 : Loftus & Palmer ================= -->
       <section class="slide" id="s6" aria-label="Slide 6: Loftus and Palmer question wording experiment">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M40,500 L200,500 M40,500 L40,360" stroke="#EA580C" stroke-width="3" opacity=".07" fill="none"></path><rect x="70" y="430" width="34" height="70" fill="#EA580C" opacity=".05"></rect><rect x="120" y="405" width="34" height="95" fill="#EA580C" opacity=".06"></rect></g><g class="anim-d"><circle class="bg-orb" cx="850" cy="110" r="120" stroke="#2547D1"></circle></g></svg></div>
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M40,500 L200,500 M40,500 L40,360 M70,500 v-18 M110,500 v-26 M150,500 v-34" stroke="#EA580C" stroke-width="3" opacity=".07" fill="none"></path></g><g class="anim-e"><circle class="bg-orb" cx="850" cy="110" r="120" stroke="#2547D1"></circle><circle class="bg-orb" cx="850" cy="110" r="70" stroke="#2547D1"></circle></g><g class="anim-d"><path d="M760,430 l34,34 l58,-64" stroke="#15803D" stroke-width="5" fill="none" opacity=".07" stroke-linecap="round"></path></g></svg></div>
         <div>
           <p class="eyebrow">Memory · 06</p>
           <h1 class="title">Can One Word Change a Memory?</h1>
@@ -766,7 +799,7 @@ h1.title{
 
       <!-- ================= SLIDE 8 : Confidence & accuracy ================= -->
       <section class="slide" id="s8" aria-label="Slide 8: confidence and accuracy">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M60,480 A200,200 0 0 1 460,480" fill="none" stroke="#15803D" stroke-width="4" opacity=".07"></path></g><g class="anim-d"><circle class="bg-orb" cx="840" cy="120" r="100" stroke="#F59E0B"></circle></g></svg></div>
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M60,480 A200,200 0 0 1 460,480" fill="none" stroke="#15803D" stroke-width="4" opacity=".07"></path><path d="M260,480 L350,330" stroke="#15803D" stroke-width="4" opacity=".06" stroke-linecap="round"></path></g><g class="anim-e"><circle class="bg-orb" cx="840" cy="120" r="100" stroke="#F59E0B"></circle></g><g class="anim-d"><circle class="bg-orb" cx="120" cy="90" r="52" stroke="#2547D1"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Calibration · 08</p>
           <h1 class="title">Confidence Does Not Guarantee Accuracy</h1>
@@ -793,9 +826,9 @@ h1.title{
             <span class="tag">Slides 2 · 4 · 5 · 6 · 7</span>
           </div>
         </div>
-                <div class="s8-quiz" id="s8-quiz" role="group" aria-label="Answer each question, set your confidence, then reveal">
-          <div class="qclaim" data-answer="needle"><span class="qtext">In the sound clip you just heard three times, which phrase was actually recorded?</span><span class="qctl"><button class="flip-btn pred" data-pred="brainstorm" type="button">“Brainstorm”</button><button class="flip-btn pred" data-pred="needle" type="button">“Green needle”</button></span><span class="qverdict hidden-row"></span></div>
-          <div class="qclaim" data-answer="false"><span class="qclaim-sub"></span><span class="qtext">People who are very sure of an answer are almost always right about it.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">Looks true</button><button class="flip-btn pred" data-pred="false" type="button">Looks false</button></span><span class="qverdict hidden-row"></span></div>
+                <div class="s8-quiz" id="s8-quiz" role="group" aria-label="Answer each question and say how sure you are, then reveal">
+          <div class="qclaim" data-answer="needle"><span class="qtext">In the sound clip you just heard three times, which phrase was actually recorded?</span><span class="qctl"><button class="flip-btn pred" data-pred="brainstorm" type="button">&ldquo;Brainstorm&rdquo;</button><button class="flip-btn pred" data-pred="needle" type="button">&ldquo;Green needle&rdquo;</button></span><span class="qctl conf-row"><span class="conf-q">How sure are you?</span><button class="flip-btn conf-chip" data-conf="30" type="button">Guessing</button><button class="flip-btn conf-chip" data-conf="65" type="button">Pretty sure</button><button class="flip-btn conf-chip" data-conf="95" type="button">Certain</button></span><span class="qverdict hidden-row"></span></div>
+          <div class="qclaim" data-answer="true"><span class="qtext">True or false: in this deck, the Ebbinghaus circles really were the same size.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">True</button><button class="flip-btn pred" data-pred="false" type="button">False</button></span><span class="qctl conf-row"><span class="conf-q">How sure are you?</span><button class="flip-btn conf-chip" data-conf="30" type="button">Guessing</button><button class="flip-btn conf-chip" data-conf="65" type="button">Pretty sure</button><button class="flip-btn conf-chip" data-conf="95" type="button">Certain</button></span><span class="qverdict hidden-row"></span></div><div class="qclaim" data-answer="false"><span class="qclaim-sub"></span><span class="qtext">People who are very sure of an answer are almost always right about it.</span><span class="qctl"><button class="flip-btn pred" data-pred="true" type="button">Looks true</button><button class="flip-btn pred" data-pred="false" type="button">Looks false</button></span><span class="qverdict hidden-row"></span></div>
         </div>
         <div class="action-zone"><button class="act-btn" id="act-s8" type="button">Reveal the answers</button></div>
         <div class="callout">Confidence can be wrong. That is not the same as confidence always being wrong.</div>
@@ -804,7 +837,7 @@ h1.title{
 
       <!-- ================= SLIDE 9 : Habits ================= -->
       <section class="slide" id="s9" aria-label="Slide 9: practical reasoning habits">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><path d="M760,90 l30,30 l55,-60" stroke="#15803D" stroke-width="6" fill="none" opacity=".08" stroke-linecap="round"></path></g><g class="anim-c"><circle class="bg-orb" cx="120" cy="440" r="110" stroke="#2547D1"></circle></g></svg></div>
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><path d="M760,90 l30,30 l55,-60" stroke="#15803D" stroke-width="6" fill="none" opacity=".08" stroke-linecap="round"></path><path d="M60,120 l22,22 l40,-46" stroke="#15803D" stroke-width="5" fill="none" opacity=".05" stroke-linecap="round"></path></g><g class="anim-e"><circle class="bg-orb" cx="120" cy="440" r="110" stroke="#2547D1"></circle><circle class="bg-orb" cx="120" cy="440" r="60" stroke="#2547D1"></circle></g><g class="anim-d"><rect x="820" y="380" width="110" height="110" rx="20" fill="none" stroke="#94A3B8" stroke-width="3" opacity=".06"></rect></g></svg></div>
         <div>
           <p class="eyebrow">Habits · 09</p>
           <h1 class="title">How to Check Yourself</h1>
@@ -822,7 +855,7 @@ h1.title{
 
       <!-- ================= SLIDE 10 : Closing ================= -->
             <section class="slide" id="s10" aria-label="Slide 10: synthesis and questions">
-        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><circle class="bg-orb" cx="480" cy="540" r="220" stroke="#2547D1"></circle><circle class="bg-orb" cx="480" cy="540" r="150" stroke="#E11D48"></circle></g><g class="anim-d"><circle class="bg-orb" cx="880" cy="80" r="70" stroke="#94A3B8"></circle></g></svg></div>
+        <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-b"><path d="M0,80 L420,260 M0,460 L420,290 M960,60 L540,250 M960,480 L545,285" stroke="#2547D1" stroke-width="2.5" opacity=".05" fill="none"></path></g><g class="anim-e"><circle class="bg-orb" cx="480" cy="270" r="150" stroke="#2547D1"></circle><circle class="bg-orb" cx="480" cy="270" r="90" stroke="#E11D48"></circle></g><g class="anim-c"><circle class="bg-orb" cx="880" cy="80" r="70" stroke="#94A3B8"></circle></g></svg></div>
         <div>
           <p class="eyebrow">Closing · 10</p>
           <h1 class="title">What Else Might <span class="accent">You Be Missing?</span></h1>
@@ -864,12 +897,14 @@ h1.title{
 
   <footer class="controls">
     <div class="nav-cluster">
-      <button class="nav-btn" id="prevBtn" type="button" aria-label="Previous slide">‹ Previous</button>
-      <button class="nav-btn" id="nextBtn" type="button" aria-label="Next slide">Next ›</button>
+      <button class="nav-btn nav-prev" id="prevBtn" type="button" aria-label="Previous slide"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg></button>
+      <button class="nav-btn nav-next" id="nextBtn" type="button" aria-label="Next slide"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5 L16 12 L9 19"/></svg></button>
       <span class="slide-ind" id="slideInd">1 / 10</span>
-      <button class="music-toggle" id="musicToggle" type="button" aria-pressed="false" title="Play this slide’s background music">Music · Off</button>
+      <button class="music-toggle" id="musicToggle" type="button" aria-pressed="false" title="Play this slide’s background music"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17V6l9-2v11"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="15.5" cy="15.5" r="2.5"/></svg><span id="musicState">Off</span></button>
     </div>
-    <div class="progress" id="progress" role="group" aria-label="Go to slide"></div>
+    <div class="progress-wrap">
+      <div class="progress-track" id="progressTrack" role="slider" tabindex="0" aria-label="Slide progress: drag or use arrow keys" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
     <button class="icon-btn cue-toggle" id="cueBtn" type="button" aria-expanded="false">Presenter cue</button>
   </footer>
 </div>
@@ -921,7 +956,7 @@ setInterval(function(){
 var DEMOS = {};
 
 /* ---------------- Audio system: independent BGM + action-sound controls ---------------- */
-var AUDIO = { musicOn:false, sfxOn:true };
+var AUDIO = { musicOn:false, musicPrefersOn:false, sfxOn:true };
 (function(){
   /* =====================================================
      Rev2 audio engine — fully offline Web-Audio synth.
@@ -995,8 +1030,8 @@ var AUDIO = { musicOn:false, sfxOn:true };
   function setMusicUI(on){
     var btn=$('musicToggle');
     if(btn){ btn.setAttribute('aria-pressed',on?'true':'false');
-             btn.textContent='Music · '+(on?'On':'Off');
-             btn.title = on ? ('Now playing: '+PROG[musIdx].name+' (stops on slide 3)') : 'Play this slide’s background music'; }
+             var st=$('musicState'); if(st) st.textContent = on ? 'On · '+PROG[musIdx].name : 'Off';
+             btn.title = on ? ('Now playing: '+PROG[musIdx].name+' (stops on slide 3)') : ('Play this slide’s background music'+(AUDIO.musicPrefersOn?' — auto-starts when permitted':'')); }
   }
   function startMusic(idx){
     musIdx=((idx%PROG.length)+PROG.length)%PROG.length;
@@ -1031,8 +1066,21 @@ var AUDIO = { musicOn:false, sfxOn:true };
   AUDIO.slideLeft=function(){ if(playing) stopMusic(); };
   AUDIO.toggleMusic=function(){
     AUDIO.musicOn=!AUDIO.musicOn;
+    AUDIO.musicPrefersOn=AUDIO.musicOn;   /* remember the presenter's choice for this session */
     if(AUDIO.musicOn) AUDIO.slideEntered(current); else stopMusic();
   };
+  /* Phase 2: one-time auto-start of the preferred slide music after the first
+     user interaction (browser autoplay policy). Never fires on slide 3. */
+  var musicArmed=false;
+  function armMusicOnce(){
+    if(musicArmed || !AUDIO.musicPrefersOn || current===2){ return; }
+    musicArmed=true;
+    document.removeEventListener('pointerdown', armMusicOnce, true);
+    document.removeEventListener('keydown', armMusicOnce, true);
+    AUDIO.slideEntered(current);
+  }
+  document.addEventListener('pointerdown', armMusicOnce, true);
+  document.addEventListener('keydown', armMusicOnce, true);
 
   /* ---- sound effects: own bus, fired synchronously from animation frames ---- */
   function blip(name){
@@ -1533,7 +1581,9 @@ function rafStop(obj){
       showView('poll'); step = 2; refreshUI(); return;
     }
     setText($('wv-word-text'), WORDS[i].toUpperCase());
-    setDot(i+1);
+    setDot(i+1); syncS5Buttons();
+    AUDIO.playSfx('tick'); speak(WORDS[i]);
+    if(paused) return;
     tb.after(function(){
       // blank gap
       setText($('wv-word-text'), '');
@@ -1565,6 +1615,50 @@ function rafStop(obj){
     ['s5-why','s5-careful'].forEach(function(id){ var e=$(id); if(e){e.classList.remove('hidden-row'); e.classList.add('shown');} });
     refreshUI();
   }
+  var paused=false, autoMode=true, spokenWarned=false;
+  var HAS_TTS = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+  function speak(w){
+    if(!HAS_TTS || !autoMode) return;        /* manual steps are silent-by-design ticks only */
+    try{
+      var u = new SpeechSynthesisUtterance(w);
+      u.rate = 0.95; u.pitch = 1; u.volume = .9;
+      window.speechSynthesis.cancel();       /* never overlap utterances */
+      window.speechSynthesis.speak(u);
+    }catch(e){ if(!spokenWarned){ spokenWarned=true; setText($('s5-speech-note'),'Speech synthesis failed — words stay on screen.'); } }
+  }
+  function syncS5Buttons(){
+    ['s5-prev','s5-pause','s5-next'].forEach(function(id){ var b=$(id); if(b) b.disabled = !(step===1 && idx<WORDS.length); });
+    var p=$('s5-pause'); if(p) p.textContent = paused ? 'Resume' : 'Pause';
+  }
+  function stepWord(dir){
+    if(step!==1) return;
+    tb.clear();                              /* cancel the running sequence, take manual control */
+    autoMode = false;
+    var a=$('s5-auto'); if(a){ a.setAttribute('aria-pressed','false'); a.textContent='Auto: Off'; }
+    idx = Math.max(0, Math.min(WORDS.length-1, idx + dir));
+    AUDIO.playSfx('tick');                   /* subtle sound when the displayed word changes */
+    setText($('wv-word-text'), WORDS[idx].toUpperCase());
+    setDot(idx+1);
+    paused = false; syncS5Buttons();
+  }
+  $('s5-prev').addEventListener('click', function(){ stepWord(-1); });
+  $('s5-next').addEventListener('click', function(){
+    if(idx >= WORDS.length-1){ showView('poll'); step=2; refreshUI(); return; }
+    stepWord(+1);
+  });
+  $('s5-pause').addEventListener('click', function(){
+    if(step!==1) return;
+    paused=!paused;
+    if(paused){ tb.clear(); if(HAS_TTS) try{window.speechSynthesis.pause();}catch(e){} }
+    else { playFrom(idx); }
+    syncS5Buttons();
+  });
+  $('s5-restart').addEventListener('click', function(){ DEMOS[4].reset(); DEMOS[4].act(); });
+  $('s5-auto').addEventListener('click', function(){
+    autoMode=!autoMode; var a=$('s5-auto');
+    a.setAttribute('aria-pressed', autoMode?'true':'false'); a.textContent='Auto: '+(autoMode?'On':'Off');
+    if(autoMode && step===1 && !paused) playFrom(idx);   /* resume timed cadence with voice */
+  });
   DEMOS[4] = {
     label: function(){
       if(step===0) return "Start the word list";
@@ -1574,12 +1668,19 @@ function rafStop(obj){
       return null;
     },
     act: function(){
-      if(step===0){ step = 1; showView('word'); setDot(0); playFrom(0); refreshUI(); }
+      if(step===0){
+        step = 1; paused=false; autoMode=true;
+        var a=$('s5-auto'); if(a){ a.setAttribute('aria-pressed','true'); a.textContent='Auto: On'; }
+        setText($('s5-speech-note'), HAS_TTS ? '' : 'No speech synthesis in this browser — words display visually only.');
+        showView('word'); setDot(0); playFrom(0); refreshUI(); syncS5Buttons();
+      }
       else if(step===2){ markPoll(); }
       else if(step===3){ showFullList(); }
     },
     reset: function(){
-      tb.clear(); step = 0; idx = 0;
+      tb.clear(); step = 0; idx = 0; paused = false;
+      if(HAS_TTS) try{ window.speechSynthesis.cancel(); }catch(e){}
+      syncS5Buttons();
       showView('idle'); setDot(0);
       setText($('wv-word-text'),'');
       ['chip-TIRED','chip-BLANKET','chip-SLEEP','chip-WINDOW'].forEach(function(id){
@@ -1730,8 +1831,15 @@ function rafStop(obj){
         c.setAttribute('data-picked', b.getAttribute('data-pred'));
       });
     });
-    var r = c.querySelector('.conf-range'), v = c.querySelector('.conf-val');
-    if(r && v) r.addEventListener('input', function(){ v.textContent = r.value + '%'; });
+    c.querySelectorAll('.conf-chip').forEach(function(ch){
+      ch.setAttribute('aria-pressed','false');
+      ch.addEventListener('click', function(){
+        c.querySelectorAll('.conf-chip').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        ch.setAttribute('aria-pressed','true');
+        c.setAttribute('data-conf', ch.getAttribute('data-conf'));
+        c.setAttribute('data-conf-label', ch.textContent);
+      });
+    });
   });
   DEMOS[7] = {
     label: function(){ return revealed ? null : "Reveal the answers"; },
@@ -1742,8 +1850,8 @@ function rafStop(obj){
       claims.forEach(function(c){
         var ans = c.getAttribute('data-answer');
         var picked = c.getAttribute('data-picked') || 'none';
-        var confEl = c.querySelector('.conf-range');
-        var conf = confEl ? parseInt(confEl.value,10) : 0;
+        var conf = c.hasAttribute('data-conf') ? parseInt(c.getAttribute('data-conf'),10) : 0;
+        var confLabel = c.getAttribute('data-conf-label') || '—';
         var vd = c.querySelector('.qverdict');
         var truth = (ans==='needle') ? '“Green needle”' : (ans==='false' ? 'FALSE' : 'TRUE');
         var msg;
@@ -1752,7 +1860,7 @@ function rafStop(obj){
           var correct = (picked===ans);
           nAnswered++; confSum += conf;
           if(correct) nCorrect++;
-          msg = (correct ? 'Correct — at ' + conf + '% confidence. ' : 'Wrong — despite ' + conf + '% confidence. ') + 'Answer: ' + truth + '.';
+          msg = (correct ? 'Correct — you said: ' + confLabel + '. ' : 'Wrong — even though you said: ' + confLabel + '. ') + 'Answer: ' + truth + '.';
           c.classList.add(correct ? 'correct-pick' : 'wrong-pick');
         }
         vd.textContent = msg;
@@ -1761,7 +1869,7 @@ function rafStop(obj){
       });
       var note = $('s8-title-note');
       if(note && nAnswered){
-        setText(note, 'Class snapshot: ' + nCorrect + ' of ' + nAnswered + ' committed answers were right, at an average stated confidence of ' + Math.round(confSum/nAnswered) + '%. Feeling certain does not guarantee being correct.');
+        setText(note, 'Class snapshot: ' + nCorrect + ' of ' + nAnswered + ' committed answers were right (most said “pretty sure” or better). Feeling certain does not guarantee being correct.');
       } else if(note){
         setText(note, 'Feeling certain does not guarantee being correct — this classroom activity shows the gap; it is not a psychological assessment.');
       }
@@ -1771,13 +1879,13 @@ function rafStop(obj){
     reset: function(){
       revealed = false;
       claims.forEach(function(c){
-        c.removeAttribute('data-picked');
+        c.removeAttribute('data-picked'); c.removeAttribute('data-conf'); c.removeAttribute('data-conf-label');
         c.classList.remove('correct-pick','wrong-pick');
-        c.querySelectorAll('.pred').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        c.querySelectorAll('.pred,.conf-chip').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
         var vd = c.querySelector('.qverdict');
         vd.className = 'qverdict hidden-row'; vd.textContent = '';
       });
-      setText($('s8-title-note'), 'Answer, set your confidence, then reveal — compare certainty with accuracy.');
+      setText($('s8-title-note'), 'Commit to an answer, say how sure you feel, then reveal — compare certainty with accuracy.');
     }
   };
 })();
@@ -1814,12 +1922,11 @@ function triggerActiveSlideAction(){
 }
 
 function refreshUI(){
-  // progress dots
-  var pdots = $('progress').children;
-  for(var i=0;i<pdots.length;i++){
-    pdots[i].setAttribute('aria-current', i===current ? 'true':'false');
-    pdots[i].setAttribute('aria-label', 'Slide '+(i+1));
-  }
+  /* Phase 2: linear progress bar — width, ARIA value and slide state stay in sync */
+  var fill = $('progressFill'), track = $('progressTrack');
+  if(fill) fill.style.width = ((current+1)/TOTAL*100).toFixed(2)+'%';
+  if(track){ track.setAttribute('aria-valuenow', String(current+1));
+             track.setAttribute('aria-valuetext', 'Slide '+(current+1)+' of '+TOTAL); }
   setText($('slideInd'), (current+1)+' / '+TOTAL);
   setText($('sectionLabel'), SECTIONS[current]);
   $('prevBtn').disabled = current===0;
@@ -1842,15 +1949,26 @@ function refreshUI(){
   setText($('cueText'), (current+1)+'. '+CUES[current]);
 }
 
-/* Progress dots */
+/* Phase 2: linear progress bar — click / drag / keyboard seeking */
 (function(){
-  var p = $('progress');
-  for(var i=0;i<TOTAL;i++){
-    var b = document.createElement('button');
-    b.className='pdot'; b.type='button';
-    (function(idx){ b.addEventListener('click', function(){ navigateToSlide(idx); }); })(i);
-    p.appendChild(b);
+  var track = $('progressTrack');
+  function seekFromX(clientX){
+    var r = track.getBoundingClientRect();
+    if(r.width<=0) return;
+    var frac = Math.min(1, Math.max(0, (clientX - r.left)/r.width));
+    navigateToSlide(Math.min(TOTAL-1, Math.floor(frac*TOTAL)));
   }
+  var dragging=false;
+  track.addEventListener('pointerdown', function(ev){ dragging=true; try{track.setPointerCapture(ev.pointerId);}catch(e){} seekFromX(ev.clientX); });
+  track.addEventListener('pointermove', function(ev){ if(dragging) seekFromX(ev.clientX); });
+  track.addEventListener('pointerup',   function(){ dragging=false; });
+  track.addEventListener('pointercancel', function(){ dragging=false; });
+  track.addEventListener('keydown', function(ev){
+    if(ev.key==='ArrowRight'){ ev.preventDefault(); navigateToSlide(current+1); }
+    else if(ev.key==='ArrowLeft'){ ev.preventDefault(); navigateToSlide(current-1); }
+    else if(ev.key==='Home'){ ev.preventDefault(); navigateToSlide(0); }
+    else if(ev.key==='End'){ ev.preventDefault(); navigateToSlide(TOTAL-1); }
+  });
 })();
 
 /* Nav buttons + delegated action-button listener */
@@ -2021,9 +2139,13 @@ window.__selfTest = function(){
   return failures;
 };
 
-/* init */
-slides[0].classList.add('is-active');
-refreshUI();
+/* init — Phase 2: a fresh load ALWAYS starts on slide 1. No persisted or URL
+   state may resume the deck mid-way; navigation is presenter-driven only. */
+(function(){
+  for(var i=0;i<TOTAL;i++){ if(i!==current) slides[i].classList.remove('is-active'); }
+  slides[current].classList.add('is-active');
+  refreshUI();
+})();
 setTimeout(function(){ try{ window.__selfTest(); }catch(e){ console.log('[deck self-test] ERROR', e); } }, 1500);
 
 })();
