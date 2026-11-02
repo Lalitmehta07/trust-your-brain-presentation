@@ -1235,7 +1235,7 @@ function rafStop(obj){
      wall hits in T seconds is EXACTLY 10 (verified by whiteBounceTotal and
      asserted in the self-test). Each hit fires in the same animation frame
      as its green edge flash + click. */
-  var WHITE = {x0:30, y0:270, vx: (930-30)/ (T*0.5), vy: -(500-2*ARENA.R)/(T*0.2)};
+  var WHITE = {x0:30, y0:270, vx: (930-30)/((ARENA.W-2*ARENA.R)/2), vy: -((ARENA.H-2*ARENA.R)/(T*0.2))};
 
   function fold(p0, v, lo, hi, t){
     var L = hi - lo;
@@ -1292,7 +1292,7 @@ function rafStop(obj){
       gDiscs.appendChild(c);
       els.push({el:c, x:d.x0, y:d.y0, vx:d.vx*SPEED, vy:d.vy*SPEED, morph:i===2, sq:false});
     });
-    var w = mk('circle',{cx:WHITE_PTS[0][0], cy:WHITE_PTS[0][1], r:ARENA.R, fill:'#FFFFFF', stroke:'#0F172A','stroke-width':3});
+    var w = mk('circle',{cx:WHITE.x0, cy:WHITE.y0, r:ARENA.R, fill:'#FFFFFF', stroke:'#0F172A','stroke-width':3});
     gDiscs.appendChild(w);
     els.push({el:w, white:true});
   }
