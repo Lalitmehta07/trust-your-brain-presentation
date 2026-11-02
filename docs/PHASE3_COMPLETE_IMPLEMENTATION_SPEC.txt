@@ -1,0 +1,297 @@
+CAN YOU TRUST YOUR OWN BRAIN?
+PHASE 3 — COMPLETE CORRECTIVE IMPLEMENTATION SPECIFICATION
+
+PURPOSE
+This is the single authoritative implementation brief for Phase 3. Read the entire file before modifying anything. The previous Phase 2 implementation was incomplete. The goal is to deliver the presentation described by the original project specifications, not another cosmetic revision.
+
+1. PROJECT ENVIRONMENT AND SOURCE OF TRUTH
+Production entry point: /workspace/index.html
+The nested trust-your-brain-deck/index.html is an older backup, not the production entry point. Do not accidentally deploy it.
+
+Expected files include index.html, trust-your-brain-deck/index.html, classroom-clip.mp4, dual-sounding-audio.mp3, Profilepicture.jpg, research-brief.pdf, README.md, qwen_master_prompt_cleanroom.md, qwen_master_prompt_single_html.txt, qwen_revision_master_prompt_v2.txt, _rev2/ and .build-artifacts/.
+
+The project was previously audited as a single-file HTML presentation using a JavaScript IIFE, slides[] array, zero-based current slide index, navigateToSlide(), refreshUI(), DEMOS registry with leave/reset hooks, unified audio engine, progress-bar pointer scrubbing and local assets. Verify the actual workspace rather than assuming the audit is current.
+
+ORIGINAL SPECIFICATIONS ARE AUTHORITATIVE
+Read completely where possible:
+- qwen_master_prompt_cleanroom.md
+- qwen_master_prompt_single_html.txt
+- qwen_revision_master_prompt_v2.txt
+- README.md
+- Existing page-wise analysis and earlier implementation artifacts, including _rev2/ and .build-artifacts/.
+
+Build a requirement matrix for all ten slides: original requirement, current implementation, actual defect, required modification, test procedure and acceptance condition. Do not rely only on the Phase 2 report. If instructions conflict, prioritise newer explicit instructions. If a parameter cannot be recovered, report uncertainty. Do not invent scientific details or silently substitute an easier implementation.
+
+2. GIT AND DEPLOYMENT SAFETY
+Previous successful deployment commit: 2bbd671
+Target branch: revision/final-classroom-presentation
+GitHub Pages is configured to deploy from this branch.
+
+The earlier Qwen publishing integration created problematic Pull Request #6 against main. It is unrelated to the successful deployment and must not be used.
+
+Rules:
+- Work only on revision/final-classroom-presentation.
+- Do not create another PR against main.
+- Do not merge the stale Qwen publishing branch.
+- Do not reset or rewrite history.
+- Do not force-push or delete remote branches.
+- Do not change GitHub Pages configuration.
+- Do not automatically publish.
+- Do not resolve the old .gitignore conflict by merging the stale branch.
+
+Before editing, run git status, confirm branch, inspect latest commit and remote refs, and ensure working tree is safe. If behind the successful deployment, reconcile safely using normal fast-forward only where appropriate. Never overwrite uncommitted work or discard session changes. GitHub credentials may be unavailable; final delivery must be a verified project export for manual Termux deployment.
+
+3. IMPLEMENTATION PHILOSOPHY
+Address all three dimensions:
+A. Visual: typography, alignment, layout, colours, illustrations, animations and controls.
+B. Functional: experiment behaviour, state, audio/video, collision detection, interactions, replay/reset.
+C. Scientific: correct stimulus, sequence, explanation, evidence and interpretation.
+
+A beautiful mock-up with nonfunctional controls fails. A functional experiment with broken layout fails. A scientifically inaccurate experiment fails.
+
+Preserve working behaviour unless original specifications explicitly require change. Pay particular attention to Ebbinghaus, Monkey Business video, audio isolation, slide lifecycle hooks, navigation, offline media and replay. Avoid rewriting the architecture unnecessarily.
+
+4. CRITICAL GLOBAL BUG: SELF-TEST NAVIGATES TO SLIDE 6
+Confirmed audit finding:
+- Fresh load initially activates Slide 1.
+- After approximately 1.5 seconds, automatic window.__selfTest() runs.
+- It calls navigateToSlide(2) through navigateToSlide(5).
+- It never restores the original slide.
+- The presentation consequently ends up on Slide 6.
+
+Repair:
+- Make self-test opt-in, e.g. ?selftest=1, or execute in an isolated test context.
+- Never run destructive navigation tests automatically during normal audience use.
+- If retained, save/restore initial slide, audio state and experiment state; clear timers/listeners; stop animations/audio; ensure no visible slide jump.
+- Do not merely append navigateToSlide(0) without investigating side effects.
+- Normal page load must remain on Slide 1 after at least five seconds.
+
+5. REPAIR STALE SELF-TEST ASSERTIONS
+Seven assertions currently fail or are stale. Audit identified expectations involving act-s1, bounce count, asset placeholder tokens, WebSocket/EventSource/fetch checks, legacy BGM/SFX buttons, Slide 8 quiz claims and visible press-A hint.
+
+For each assertion determine whether it is a real requirement or obsolete. Replace obsolete assertions with tests for current intended behaviour. Keep genuine safety/functional assertions. Do not delete the whole harness just to pass tests.
+
+Normal audience mode must not navigate automatically, generate test sounds, expose test controls or modify experiment state. Test mode must be explicitly enabled, restore state and report real failures.
+
+6. GLOBAL VISUAL DESIGN AND DIMENSIONS
+Use a refined hybrid neumorphic visual language: light neutral backgrounds, restrained shadows and subtle depth, clean typography, strong hierarchy, carefully spaced components, minimal scientific vector illustrations, consistent design tokens, smooth transitions and subtle background motion.
+
+Avoid excessive card nesting, rounded rectangles, large distracting graphics, unnecessary gradients/shadows, tiny text and unstyled native controls. Use Google Fonts only if already locally available or bundled. No remote font dependency.
+
+Primary target: 1920×1080. Also test 1600×900, 1366×768, mobile landscape ~844×390 and portrait ~390×844. Fit 16:9 classroom screen without clipping. Keep experiments large enough to see from a distance.
+
+7. GLOBAL NAVIGATION
+Implement and verify Previous, Next, slide counter, animated linear progress, click-to-seek, drag-to-seek, fullscreen, presenter cue, touch-friendly controls and disabled states. Keep navigation at bottom-left as originally requested. Prevent overlap between controls. Always begin at Slide 1. Do not restore old slide via localStorage, sessionStorage or URL fragments.
+
+8. GLOBAL AUDIO
+BGM and experimental audio must be independently managed: independent BGM control, experiment audio control, no overlapping audio or audio leaking between slides, proper cleanup on navigation, correct pause/resume, no speech continuing after leaving, no network dependency.
+
+Slide 3 must be isolated from BGM and extra sound effects. Preserve existing audio engine where possible; it is a high-risk shared component. Test changes against every slide.
+
+9. SLIDE 1 — OPENING
+Create a polished opening with clear title/subtitle, strong hierarchy and alignment, proper whitespace, presenter photograph/name clearly visible, presenter identity larger than old implementation, meaningful scientific vector illustration, no unexplained symbols or clutter. Establish the presentation identity, not merely reuse the old cover with larger font.
+
+10. SLIDE 2 — EBBINGHAUS ILLUSION
+Preserve original experiment. The two central orange circles must remain the same actual size if specified by original experiment. Maintain surrounding-circle contrast, audience prediction, verification/reveal and scientific accuracy. Keep experiment prominent. Do not change stimulus without scientific reason. Ensure it works after navigating away and back.
+
+11. SLIDE 3 — ONE SOUND, THREE HEARINGS
+Preserve GREEN NEEDLE / BRAINSTORM experiment. Same recording plays three times; only caption changes.
+Sequence: Round 1 neutral listening/no suggested interpretation; Round 2 first suggested phrase; Round 3 alternative suggested phrase.
+
+Requirements: same embedded audio for all rounds, proper play/pause, visible round number, large polished voting controls, audience can vote after each round, predictable transitions, final reveal explains perceptual priming.
+
+Current waveform is decorative/static. Implement genuine visualisation with Web Audio AnalyserNode if compatible: responds to actual audio data, starts/stops with playback, releases resources on slide exit, no unnecessary audio contexts, respects autoplay restrictions. If analysis is unsafe due to browser restrictions, disclose and implement fallback. Never label static art as live analysis.
+
+No BGM, extra action sounds, duplicate playback, playback after leaving or duplicate listeners. Tiny default HTML buttons under the audio card are unacceptable; integrate large polished controls.
+
+12. SLIDE 4 — ATTENTION / MOVING DOT EXPERIMENT
+Substantial reconstruction required; do not patch CSS only.
+
+Observed defects: white dot instead of required red, mostly vertical movement, incorrect collision count, reddish/orange star instead of black, no dot-to-rounded-square transformation, incomplete replay/timeline.
+
+Visual: correct red primary dot, black star, distinguishable secondary dots, clear arena, readable collision feedback, high contrast.
+
+Movement: genuine two-dimensional horizontal and vertical movement, varied trajectories, not simple vertical oscillation, correct boundary collision detection, no movement outside arena, smooth animation, faster than current implementation according to original specification, predictable timing where required. Use requestAnimationFrame or equivalent; avoid conflicting timers.
+
+Collision count: current implementation fails its bounce-count assertion. Recover exact required collision/contact count from original page-wise specification. Do not accept current six-bounce behaviour. Earlier requirements referred to a different target count; verify authoritative original value before implementation. Do not guess. Count only valid contacts by intended moving object with arena boundary. Avoid repeated-frame duplicate counts, unrelated dots or double-counting one collision.
+
+Feedback where required: green wall flash, appropriate collision click, accurate registration and correct timing.
+
+Shape transformation: one selected moving dot must transform into a rounded square. This must be an animated transition of the same object, not a separate square. Occur at intended point and remain visible.
+
+Controls: Start, Pause/stop, Restart, Replay, Replay with highlights if specified, timeline/progress and scrubbing if specified. All work. Stop animation and clean resources on slide exit. Preserve intended attention lesson; do not reveal early.
+
+13. SLIDE 5 — MEMORY WORD EXPERIMENT
+Audit found 12-word list, currently ending “yawn”; “SLEEP” absent; speech synthesis and manual controls exist. Do not change list without checking original specification.
+
+Requirements: one word at a time, large readable type, proper speech, automatic progression, manual previous/next, pause, replay, proper start/reset, requested word-change tick sound, no overlapping speech, no unexpected progression after leaving slide. Verify whether missing word is genuinely a specification defect. Controls must be styled and touch-friendly.
+
+14. SLIDE 6 — MEMORY / WORDING EXPERIMENT REPLACEMENT
+Current slide still contains Loftus–Palmer car-crash wording experiment; audit sees values 31.8 and 40.8. Earlier intended change was to replace it with a static-image motion illusion. Inspect original specification before changing. Do not confuse Slide 6 with Slides 2 or 7.
+
+Determine exact intended replacement, visual asset, whether asset exists, audience interaction, explanation and scientific evidence.
+
+If recoverable: remove obsolete car-crash experiment, implement exact replacement, preserve scientific explanation, provide clear instructions, allow observation before reveal, make visual prominent, keep image static if required, add no unrelated animation.
+
+If asset missing, report it. Do not fabricate a replacement and claim it is original. Do not retain old experiment merely because it is easier.
+
+15. SLIDE 7 — MONKEY BUSINESS
+Preserve original Monkey Business demonstration and local classroom-clip.mp4. Previously verified size: 2,861,584 bytes.
+
+Preserve video and original interaction. Ensure video plays and is not stretched/cropped incorrectly, provide clear instructions, allow audience to watch before reveal, preserve evidence interaction, pause/stop on slide exit and ensure offline operation. Do not replace with generic animation or another experiment.
+
+16. SLIDE 8 — CONFIDENCE AND CALIBRATION
+Current defects: heading obscured by first card, overlapping content, compressed layout, unstyled browser-native buttons, controls not integrated.
+
+Rebuild layout, not just colours. Ensure fully visible title/subtitle, adequate spacing, no overlapping cards, proper alignment, large readable questions, styled response controls/confidence chips, proper reveal section, responsive 16:9 layout and no overflow. Do not fix by shrinking everything.
+
+Preserve confidence/calibration demonstration. Existing chips: Guessing, Pretty sure, Certain. Verify logic against original spec.
+
+Questions clear; answers and confidence selectable; selected state obvious; no premature reveal; reveal works; explanations correct; reset/replay where specified.
+
+Scientific nuance: lesson is distinction between subjective confidence and objective accuracy. Do not imply confidence is always wrong, unrelated to accuracy, or that high/low confidence automatically predicts accuracy.
+
+Test initial, partial answer, all answers, confidence selection, pre-reveal, post-reveal and reset states. Heading must remain visible. No unstyled native buttons.
+
+17. SLIDE 9 — PRACTICAL TAKEAWAYS
+Preserve four parts: Seeing, Attention, Memory, Judgement. Keep recommendations/readable descriptions. Improve hierarchy/alignment. Add meaningful scientific vector graphics and requested subtle background animations. Avoid clutter and preserve message. Current graphics are relatively static; improve without distracting from content.
+
+18. SLIDE 10 — CLOSING
+Preserve main conclusion. Create strong composition, clear hierarchy, presenter identity, scientific iconography, summary of perception/attention/memory/judgement, functional replay shortcuts, consistent design and no clipping/overlap. Replay controls must be distinct and easy to understand. Use meaningful icons.
+
+19. GLOBAL ANIMATION / VECTOR DESIGN
+Add subtle, meaningful animations only where original requirements request them. Use inline SVG/CSS where appropriate. Keep lightweight, scientifically meaningful and away from important text. Pause on inactive slides; respect prefers-reduced-motion; do not interfere with interaction. Reuse existing inactive-slide animation mechanisms.
+
+20. BUTTON / INPUT SYSTEM
+All primary/secondary buttons, playback, voting, confidence chips, sliders, timeline, replay and reveal controls need consistent styling: clear active/hover/disabled states, visible focus, touch-friendly dimensions, consistent padding/type/spacing and adequate contrast.
+
+No unstyled browser-native controls, tiny unrelated button clusters or controls outside containers. Use semantic controls and accessible labels.
+
+21. ACCESSIBILITY
+Ensure adequate contrast, large touch targets, readable type, clear instructions, predictable interaction, keyboard accessibility, reduced motion and focus management. Keyboard shortcuts must not fire while typing into inputs. Do not rely only on colour.
+
+22. MEDIA / OFFLINE
+Keep project self-contained: embedded audio, classroom-clip.mp4 and presenter image. No external media URLs, remote fonts, CDN, analytics, external APIs or runtime network requirement.
+
+Test local server and, where practical, file:// offline. Check missing assets, broken paths, autoplay failures, video failures and unexpected network requests. Do not duplicate large assets or make local video remote.
+
+23. CODE QUALITY
+Preserve single-file IIFE architecture unless technically necessary to change. Organise functions; avoid duplicate listeners, conflicting animation loops, orphaned timers and unnecessary globals. Clean listeners/resources; preserve lifecycle hooks; reset state predictably; control audio contexts/media. Do not introduce a large framework or restructure unnecessarily.
+
+24. MANDATORY REAL BROWSER TESTING
+Previous HTML parsing, JS syntax checks and structural assertions were insufficient. Use Playwright in a real browser.
+
+Available according to audit: Playwright 1.44, Chromium executable:
+ /root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+
+Use Python Playwright API because Node-side Playwright module is absent. Configure executable_path explicitly. Do not waste time installing Node Playwright if Python works.
+
+Test viewports: 1920×1080 (primary), 1600×900, 1366×768, 844×390 and 390×844. Mobile must remain usable, but do not sacrifice classroom layout.
+
+25. TEN-SLIDE VISUAL INSPECTION
+Capture actual browser screenshots for Slides 1–10. Do not use mockups or generated substitutes. Inspect every screenshot.
+
+Check overlap, clipping, missing content, alignment, tiny text, unstyled controls, off-screen elements, spacing, broken media, empty areas, horizontal scrolling and graphics obscuring text.
+
+For each defect: identify CSS/DOM/JS cause, fix it, reload, capture corrected screenshot and verify.
+
+26. INTERACTION-STATE SCREENSHOTS
+Slide 3: neutral round, first caption, alternative caption, voting, final explanation, waveform during playback.
+Slide 4: initial arena, active movement, valid collision, green feedback, shape transformation, final count, replay/highlights, timeline.
+Slide 5: initial word, displayed word, automatic progression, manual controls, pause, replay.
+Slide 6: initial, observation, reveal, explanation.
+Slide 7: before video, during video, reveal/evidence.
+Slide 8: initial, answer, confidence, pre-reveal, post-reveal, reset.
+
+27. FUNCTIONAL TEST MATRIX
+Global: fresh load starts Slide 1 and remains there after 5 seconds; Next/Previous; counter/progress updates; click/drag progress; fullscreen where permitted; presenter cue; music toggle; correct audio state on navigation; no audio leaks.
+
+Slide 2: prediction, reveal, equal circle sizes/positions.
+Slide 3: three rounds, same recording, captions, votes, no duplicate audio, BGM isolation, waveform response if implemented.
+Slide 4: 2D movement, correct dot/star, exact intended count, valid registration, green feedback, transformation, replay, restart, pause, timeline, stops on exit.
+Slide 5: word sequence, speech, manual/automatic progression, pause, replay, no overlapping speech, reset.
+Slide 6: old car-crash absent if replacement confirmed, correct replacement, observation/reveal/explanation.
+Slide 7: video loads/plays/pauses, reveal works, no broken asset.
+Slide 8: answers/confidence/reveal/reset, no overlap, all controls styled.
+Slides 9–10: layout fits, replay works, no clipping or broken controls.
+
+28. SELF-TEST REQUIREMENTS
+Normal audience mode: no automatic self-test navigation, slide changes, test sounds, visible test controls or state modifications.
+
+Test mode: explicitly enabled, can run assertions, tests slides, restores state, leaves no audio/animations, reports real failures. Correct obsolete assertions; do not suppress failures without reason.
+
+29. SCIENTIFIC VALIDATION
+Check stimulus, sequence, instructions, citations, explanation and limitations. Do not invent results or numbers. Do not call classroom illustration an exact replication. Do not overstate causality. Preserve existing citations unless original spec requires correction.
+
+30. FINAL REPORT
+Provide:
+A. Summary of actual implementation.
+B. Root causes fixed.
+C. Slide-by-slide table with visual pass/fail, functional pass/fail and result for all ten slides.
+D. Browser test results: viewports, tests passed/failed, console errors, missing assets, offline result.
+E. Actual screenshots or organised screenshot directory.
+F. Every outstanding limitation. Never call incomplete work complete.
+
+31. EXPORT AND DELIVERY
+After successful implementation/testing:
+1. Verify root index.html.
+2. Verify media files.
+3. Ensure nested old presentation was not used as production entry.
+4. Ensure archive excludes .git.
+5. Verify archive extracts.
+6. Verify extracted root has production index.html.
+7. Verify sizes/checksums.
+8. Create clean project archive for Termux.
+
+Include production files and required local assets. Exclude .git, temporary browser profiles, Playwright caches, debug logs, unnecessary development artifacts and duplicate obsolete assets. Do not remove original repo files without reason. Keep nested old presentation separate and untouched.
+
+Provide archive path, size, SHA-256, manifest, final commit identifier and test report.
+
+32. HARD ACCEPTANCE CONDITIONS
+Implementation is incomplete until:
+1. Normal load remains Slide 1.
+2. Self-test no longer hijacks navigation.
+3. Stale assertions addressed.
+4. All ten slides visually inspected.
+5. All required experiments function.
+6. Slide 3 uses same recording all three rounds.
+7. Slide 4 has specified movement, collision count, colour, star and transformation.
+8. Slide 5 speech/manual controls work.
+9. Slide 6 follows actual original replacement spec.
+10. Slide 7 retains Monkey Business video.
+11. Slide 8 has no overlap or unstyled controls.
+12. Global navigation works.
+13. Audio isolation works.
+14. Offline operation works.
+15. Screenshots inspected.
+16. No critical visual/functional failures remain.
+
+Syntax check alone is insufficient. Self-reported completion is insufficient. A polished opening slide is insufficient. The actual presentation must work.
+
+33. FINAL EXECUTION AUTHORISATION
+After reading this entire file:
+1. Recheck workspace and Git state.
+2. Read original specs.
+3. Build requirement matrix.
+4. Identify conflicts between audit and original requirements.
+5. Fix self-test/navigation bug.
+6. Implement missing functionality and visual corrections across all ten slides.
+7. Run browser QA.
+8. Inspect screenshots.
+9. Correct defects.
+10. Produce verified export and report.
+
+Work systematically. Do not stop after one slide, make superficial substitutions or silently skip difficult requirements. If a tool limit prevents completion, stop safely and report exact remaining work.
+
+ABSOLUTE RULES:
+- Do not push to GitHub.
+- Do not create a pull request.
+- Do not merge into main.
+- Do not change GitHub Pages settings.
+- Do not force-push.
+- Do not publish automatically.
+- Do not overwrite the successful deployed version.
+
+I will inspect and approve the final implementation before deployment.
+
+Deliver the actual presentation specified by the original project requirements, not another cosmetic revision.
