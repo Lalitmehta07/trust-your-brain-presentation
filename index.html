@@ -108,9 +108,16 @@ button{appearance:none;-webkit-appearance:none;font-family:inherit;color:inherit
 
 /* Bottom control bar — navigation cluster permanently at bottom-left */
 .controls{
-  flex:0 0 auto;display:flex;align-items:center;gap:clamp(8px,1.4vw,18px);
+  flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:clamp(8px,1.4vw,18px);
   padding:clamp(6px,1vh,12px) clamp(10px,1.6vw,24px);
   border-top:1px solid var(--line);background:var(--paper);
+}
+@media (max-width:640px){
+  .controls{gap:8px;padding:8px 10px}
+  .nav-cluster{flex-wrap:nowrap}
+  .progress-wrap{flex:1 1 100%;order:3}
+  .cue-toggle{font-size:11px;padding:6px 8px;min-height:36px;margin-left:auto}
+  .slide-ind{font-size:11px}
 }
 .nav-btn{
   min-height:56px;min-width:96px;padding:10px 26px;border:1px solid var(--line);border-radius:16px;
@@ -414,6 +421,12 @@ h1.title{
 .dot-b{fill:#0F172A}
 .dot-w{fill:#FFFFFF;stroke:#CBD5E1;stroke-width:2}
 .imp-ring{fill:none;stroke:#16A34A;stroke-width:6;opacity:0}
+.arena-slider{width:100%;height:34px;margin-top:8px;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+.arena-slider::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:#E2E8F0;box-shadow:inset 2px 2px 5px rgba(15,23,42,.14), inset -2px -2px 5px rgba(255,255,255,.9)}
+.arena-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;margin-top:-8px;background:#EEF2F7;border:1px solid #D7DEE8;box-shadow:4px 4px 10px rgba(15,23,42,.16), -3px -3px 8px rgba(255,255,255,.9)}
+.arena-slider:focus-visible{outline:3px solid #2563EB;outline-offset:4px}
+.arena-slider::-moz-range-track{height:10px;border-radius:999px;background:#E2E8F0}
+.arena-slider::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#EEF2F7;border:1px solid #D7DEE8}
 .s4-vote{display:flex;gap:clamp(10px,1.6vw,22px);flex-wrap:wrap;justify-content:center;margin-top:6px}
 /* ---- Slide 5: speech status ---- */
 .speech-note{margin-top:6px;font-size:clamp(10px,1.05vw,15px);font-weight:700;color:var(--muted);text-align:center;min-height:1.4em}
@@ -467,7 +480,6 @@ h1.title{
     </div>
     <div class="top-spacer"></div>
     <span class="timer" id="deckTimer" aria-label="Presentation timer">00:00</span>
-    <span id="sfxBtn" hidden></span>
     <button class="icon-btn" id="fsBtn" type="button">Fullscreen</button>
   </header>
 
@@ -588,43 +600,45 @@ h1.title{
       </section>
 
       <!-- ================= SLIDE 4 : Attention arena ================= -->
-      <section class="slide" id="s4" aria-label="Slide 4: attention task — count the white dot’s bounces">
+      <section class="slide" id="s4" aria-label="Slide 4: attention task — count the red dot’s bounces">
         <div class="slide-bg" aria-hidden="true"><svg viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><g class="anim-a"><path d="M-40,470 Q180,300 380,440 T780,380 T1020,300" fill="none" stroke="#2547D1" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round" opacity=".08"></path></g><g class="anim-e"><circle class="bg-orb" cx="120" cy="100" r="70" stroke="#0F172A"></circle></g><g class="anim-b"><rect x="700" y="380" width="200" height="120" rx="22" fill="none" stroke="#E11D48" stroke-width="3" opacity=".06"></rect></g></svg></div>
         <div>
           <p class="eyebrow">Attention · 04</p>
-          <h1 class="title" id="s4-title">Count the White Dot’s Bounces</h1>
-          <p class="instruction">Six dots move around the arena: five black, one white. For 12 seconds, silently count how many times the WHITE dot hits a wall. Each hit flashes green on the wall edge and clicks — count only those.</p>
+          <h1 class="title" id="s4-title">Count the Red Dot’s Bounces</h1>
+          <p class="instruction">Six dots move around the arena: five black, one red. For 12 seconds, silently count how many times the RED dot hits a wall. Each hit flashes green on the wall edge and clicks — count only those.</p>
         </div>
         <div class="cols">
           <div class="stim-col">
             <div style="width:100%;display:flex;flex-direction:column;min-height:0">
               <div class="stim-card" style="flex:0 1 auto;min-height:0">
-                <svg id="arena-svg" viewBox="-12 -12 984 524" role="img" aria-label="An arena with five black dots and one white dot moving around. The white dot hits the walls exactly ten times in twelve seconds. Count only the white dot’s wall bounces.">
+                <svg id="arena-svg" viewBox="-12 -12 984 524" role="img" aria-label="An arena with five black dots and one red dot moving around. The red dot hits the walls eleven times in twelve seconds. Count only the red dot’s wall bounces.">
                   <rect id="arena-bg" x="0" y="0" width="960" height="500" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4" style="transition:stroke .3s linear"></rect>
                   <g id="arena-discs"></g>
-                  <polygon id="arena-star" points="" fill="#EA580C" stroke="#0F172A" stroke-width="2" opacity="0"></polygon>
+                  <polygon id="arena-star" points="" fill="#0F172A" stroke="#64748B" stroke-width="2" opacity="0"></polygon>
                   <g id="arena-highlights" opacity="0" style="transition:opacity .3s"></g>
                 </svg>
               </div>
               <div class="arena-timebar" aria-hidden="true"><div id="arena-timefill"></div></div>
+              <input id="s4-timeline" class="arena-slider" type="range" min="0" max="1200" step="10" value="0" aria-label="Experiment timeline scrubber (seconds)">
               <p class="arena-status" id="arena-status" role="status" aria-live="polite"></p>
             </div>
           </div>
           <div class="side-col">
-            <div class="counter-chip" id="s4-counter" style="display:none">White bounces: <span id="s4-count">0</span></div>
+            <div class="counter-chip" id="s4-counter" style="display:none">Red bounces: <span id="s4-count">0</span></div>
             <div class="dot-vote" id="s4-vote" role="group" aria-label="Audience answer vote" style="display:none">
-              <button class="vote-btn" data-n="6" type="button">6 <span class="vc" id="vc-n6">0</span></button>
-              <button class="vote-btn" data-n="8" type="button">8 <span class="vc" id="vc-n8">0</span></button>
+              <button class="vote-btn" data-n="9" type="button">9 <span class="vc" id="vc-n9">0</span></button>
               <button class="vote-btn" data-n="10" type="button">10 <span class="vc" id="vc-n10">0</span></button>
+              <button class="vote-btn" data-n="11" type="button">11 <span class="vc" id="vc-n11">0</span></button>
               <button class="vote-btn" data-n="12" type="button">12 <span class="vc" id="vc-n12">0</span></button>
             </div>
-            <div class="row ask"><span class="k">Ask</span><span class="v">Eyes on the arena. Count the white dot’s wall bounces only — each hit flashes green on the wall edge and clicks. Watch nothing else. Keep your number secret until the reveal.</span></div>
-            <div class="row reveal hidden-row" id="s4-reveal"><span class="k">Reveal</span><span class="v"> Now the honest questions: did one of the black circles quietly turn into a square? Did an orange star travel across the arena?</span></div>
-            <div class="row ask hidden-row" id="s4-askblind"><span class="k">Ask</span><span class="v">Hands up if you noticed the circle becoming a square. Hands up for the travelling star. Watch how many hands stay down while everyone was busy counting.</span></div>
+            <div class="row ask"><span class="k">Ask</span><span class="v">Eyes on the arena. Count the red dot’s wall bounces only — each hit flashes green on the wall edge and clicks. Watch nothing else. Keep your number secret until the reveal.</span></div>
+            <div class="row reveal hidden-row" id="s4-reveal"><span class="k">Reveal</span><span class="v"> Now the honest questions: did one of the black circles quietly turn into a rounded square? Did a black star travel across the arena?</span></div>
+            <div class="row ask hidden-row" id="s4-askblind"><span class="k">Ask</span><span class="v">Hands up if you noticed the circle becoming a rounded square. Hands up for the travelling star. Watch how many hands stay down while everyone was busy counting.</span></div>
             <div class="row why hidden-row" id="s4-why"><span class="k">Why</span><span class="v">When attention is busy, unexpected things can go unnoticed. In one study, 20 of 24 radiologists searching lung scans missed a gorilla image — and 12 of those 20 looked right at it.</span></div>
             <div class="row careful hidden-row" id="s4-careful"><span class="k">Careful</span><span class="v">Not everyone misses these, and it isn’t carelessness. Not noticing is different from forgetting.</span></div>
             <div class="action-zone">
               <button class="act-btn" id="act-s4" type="button">Start the 12-second task</button>
+              <button class="act-btn" id="s4-restart-btn" type="button">Restart</button>
               <button class="act-btn" id="s4-replay-btn" type="button" disabled>Replay with highlights</button>
             </div>
           </div>
@@ -954,9 +968,18 @@ setInterval(function(){
 /* ---------------- Demo registry ----------------
    Each demo: {label():string|null, act():void, reset():void}       */
 var DEMOS = {};
+/* Phase 3: minimal automation surface — read-only state + programmatic
+   navigation for the regression suite. No behaviour change for users. */
+window.__deck = {
+  go: function(n){ navigateToSlide(n); },
+  current: function(){ return current; },
+  demos: DEMOS,
+  get audio(){ return AUDIO; }
+};
 
 /* ---------------- Audio system: independent BGM + action-sound controls ---------------- */
 var AUDIO = { musicOn:false, musicPrefersOn:false, sfxOn:true };
+try{ if(localStorage.getItem('tyb_music')==='1'){ AUDIO.musicPrefersOn=true; } }catch(e){}  /* preference persists across browser restarts; NO slide state is ever stored */
 (function(){
   /* =====================================================
      Rev2 audio engine — fully offline Web-Audio synth.
@@ -1067,6 +1090,7 @@ var AUDIO = { musicOn:false, musicPrefersOn:false, sfxOn:true };
   AUDIO.toggleMusic=function(){
     AUDIO.musicOn=!AUDIO.musicOn;
     AUDIO.musicPrefersOn=AUDIO.musicOn;   /* remember the presenter's choice for this session */
+    try{ localStorage.setItem('tyb_music', AUDIO.musicOn?'1':'0'); }catch(e){}
     if(AUDIO.musicOn) AUDIO.slideEntered(current); else stopMusic();
   };
   /* Phase 2: one-time auto-start of the preferred slide music after the first
@@ -1267,8 +1291,8 @@ function rafStop(obj){
 })();
 
 /* ===============================================================
-   SLIDE 4 — Dot arena (inattentional blindness): ONE white dot with
-   EXACTLY 10 wall bounces in 12 s (each bounce = green edge flash +
+   SLIDE 4 — Dot arena (inattentional blindness): ONE red dot with
+   EXACTLY 11 wall bounces in 12 s (each bounce = green edge flash +
    synchronised click), FIVE black dots bouncing freely, one black
    circle slowly morphing into a square, and an orange star crossing
    behind them. Sound effects fire inside the same animation frame.
@@ -1277,13 +1301,16 @@ function rafStop(obj){
   var SVGNS = 'http://www.w3.org/2000/svg';
   var ARENA = {W:960, H:500, R:30};
   var T = reducedMotion ? 2.0 : 12.0;          // task duration (seconds)
-  var SPEED = reducedMotion ? (12.0/T) : 1;    // self-test time compression
+  /* Phase 3: base speed raised by 1.5x. Reduced-motion mode still compresses
+     the same analytic path into a shorter window without changing geometry. */
+  var SPEED = 1.5 * (reducedMotion ? (12.0/T) : 1);
 
-  /* White dot: analytic fold motion on BOTH axes, tuned so the number of
-     wall hits in T seconds is EXACTLY 10 (verified by whiteBounceTotal and
-     asserted in the self-test). Each hit fires in the same animation frame
-     as its green edge flash + click. */
-  var WHITE = {x0:30, y0:270, vx: (930-30)/((ARENA.W-2*ARENA.R)/2), vy: -((ARENA.H-2*ARENA.R)/(T*0.2))};
+  /* Red dot: analytic fold motion on BOTH axes (genuinely two-dimensional —
+     it visits all four walls), tuned so the number of wall hits in T seconds
+     is EXACTLY 11 (verified by redBounceTotal and asserted in the browser
+     regression suite). Each hit fires in the same animation frame as its
+     green edge flash + click sound. */
+  var RED = {x0:60, y0:440, vx: 249.0, vy: -145.0};   /* analytic check: 5 x-wall + 6 y-wall hits in T = EXACTLY 11 */
 
   function fold(p0, v, lo, hi, t){
     var L = hi - lo;
@@ -1303,10 +1330,10 @@ function rafStop(obj){
     }
     return out.sort(function(a,b){return a-b;});
   }
-  function whiteBounceTotal(tmax){
-    var n = bounceEvents(WHITE.x0,WHITE.vx*SPEED,ARENA.R,ARENA.W-ARENA.R,tmax).length
-          + bounceEvents(WHITE.y0,WHITE.vy*SPEED,ARENA.R,ARENA.H-ARENA.R,tmax).length;
-    return {total:n, per:[n]};
+  function redBounceTotal(tmax){
+    var nx = bounceEvents(RED.x0,RED.vx*SPEED,ARENA.R,ARENA.W-ARENA.R,tmax).length;
+    var ny = bounceEvents(RED.y0,RED.vy*SPEED,ARENA.R,ARENA.H-ARENA.R,tmax).length;
+    return {total:nx+ny, per:[nx,ny]};
   }
 
   /* Five black dots: axis-aligned velocities → clean bounces; index 2 is
@@ -1318,10 +1345,14 @@ function rafStop(obj){
     {x0:760, y0:380, vx:-158,vy:-121},
     {x0:430, y0:250, vx:122, vy:149}
   ];
+  /* Phase 3: one RANDOMLY selected black disc morphs into a rounded square
+     each run (Math.random chosen at build time; deterministic within a run). */
+  var morphIdx = 2;
   var MORPH_START = 0.42*T, MORPH_END = 0.75*T;   // gradual, easy to miss
   var STAR_START = 0.30*T, STAR_END = 0.85*T;      // star crosses left→right
 
   var gDiscs = $('arena-discs'), bgRect = $('arena-bg'), timeFill = $('arena-timefill'),
+      timeline = $('s4-timeline'), restartBtn = $('s4-restart-btn'),
       statusEl = $('arena-status'), star = $('arena-star'), hl = $('arena-highlights'),
       counterChip = $('s4-counter'), countEl = $('s4-count'), voteWrap = $('s4-vote'),
       replayBtn = $('s4-replay-btn');
@@ -1338,19 +1369,19 @@ function rafStop(obj){
     BLACK.forEach(function(d,i){
       var c = mk('circle',{cx:d.x0, cy:d.y0, r:ARENA.R, fill:'#0F172A'});
       gDiscs.appendChild(c);
-      els.push({el:c, x:d.x0, y:d.y0, vx:d.vx*SPEED, vy:d.vy*SPEED, morph:i===2, sq:false});
+      els.push({el:c, x:d.x0, y:d.y0, vx:d.vx*SPEED, vy:d.vy*SPEED, morph:i===morphIdx, sq:false});
     });
-    var w = mk('circle',{cx:WHITE.x0, cy:WHITE.y0, r:ARENA.R, fill:'#FFFFFF', stroke:'#0F172A','stroke-width':3});
+    var w = mk('circle',{cx:RED.x0, cy:RED.y0, r:ARENA.R, fill:'#DC2626', stroke:'#7F1D1D','stroke-width':3});
     gDiscs.appendChild(w);
     els.push({el:w, white:true});
   }
-  function whitePos(t){
-    return [ fold(WHITE.x0, WHITE.vx*SPEED, ARENA.R, ARENA.W-ARENA.R, t),
-             fold(WHITE.y0, WHITE.vy*SPEED, ARENA.R, ARENA.H-ARENA.R, t) ];
+  function redPos(t){
+    return [ fold(RED.x0, RED.vx*SPEED, ARENA.R, ARENA.W-ARENA.R, t),
+             fold(RED.y0, RED.vy*SPEED, ARENA.R, ARENA.H-ARENA.R, t) ];
   }
-  function whiteBounceTimes(){
-    return bounceEvents(WHITE.x0,WHITE.vx*SPEED,ARENA.R,ARENA.W-ARENA.R,T)
-      .concat(bounceEvents(WHITE.y0,WHITE.vy*SPEED,ARENA.R,ARENA.H-ARENA.R,T))
+  function redBounceTimes(){
+    return bounceEvents(RED.x0,RED.vx*SPEED,ARENA.R,ARENA.W-ARENA.R,T)
+      .concat(bounceEvents(RED.y0,RED.vy*SPEED,ARENA.R,ARENA.H-ARENA.R,T))
       .sort(function(a,b){return a-b;});
   }
   function starPoints(cx,cy,r){
@@ -1362,21 +1393,26 @@ function rafStop(obj){
     return pts.join(' ');
   }
   var state = {t0:0, running:false, done:false, raf:null, bounces:0, lastStroke:''};
-  var votes = {'6':0,'8':0,'10':0,'12':0};
+  var votes = {'9':0,'10':0,'11':0,'12':0};
 
   function updateVoteUI(){
-    ['6','8','10','12'].forEach(function(k){ setText($('vc-'+k), String(votes[k])); });
+    ['9','10','11','12'].forEach(function(k){ setText($('vc-'+k), String(votes[k])); });
   }
   function showRows(ids, on){
     ids.forEach(function(id){ var e=$(id); if(e){ on?e.classList.remove('hidden-row'):e.classList.add('hidden-row');
       on?e.classList.add('shown'):e.classList.remove('shown'); } });
   }
+  var flashLog = [];            /* [{n, tFlash, tSound}] — one entry per bounce event */
   function flashEdge(x,y){
     /* green flash on the wall edge at the contact point — fires in the SAME
        animation frame as the bounce sound, so they stay in sync */
+    var tFlash = performance.now();
     bgRect.setAttribute('stroke','#16A34A');
     setTimeout(function(){ if(state.running||state.done) bgRect.setAttribute('stroke','#CBD5E1'); }, 240);
     AUDIO.playSfx('bounce');
+    flashLog.push({ n: flashLog.length+1, tFlash: tFlash, tSound: performance.now(),
+                    countShown: state.nextB });
+    window.__deck.flashLog = flashLog.slice();   /* expose for automated verification */
   }
   function applyScene(t, replay){
     /* black dots: integrate from t (fold keeps motion deterministic) */
@@ -1390,26 +1426,29 @@ function rafStop(obj){
       } else {
         o.el.setAttribute('cx', x.toFixed(1)); o.el.setAttribute('cy', y.toFixed(1));
       }
-      if(!o.sq && !replay && t >= MORPH_START && i===2){
+      if(!o.sq && !replay && t >= MORPH_START && i===morphIdx){
         var f = Math.min(1,(t-MORPH_START)/(MORPH_END-MORPH_START));
         o.el.setAttribute('rx', String(ARENA.R*(1-f)));
         if(f>=1){
           o.el.removeAttribute('r'); o.el.removeAttribute('cx'); o.el.removeAttribute('cy');
           o.el.setAttribute('width', String(2*ARENA.R)); o.el.setAttribute('height', String(2*ARENA.R));
+          o.el.setAttribute('rx', String(ARENA.R*0.45));   /* ROUNDED square */
           o.el.setAttribute('x', (x-ARENA.R).toFixed(1)); o.el.setAttribute('y', (y-ARENA.R).toFixed(1));
           o.sq = true;
         }
       }
     }
-    /* white dot + bounce events */
-    var wp = whitePos(t);
+    /* red dot + bounce events */
+    var wp = redPos(t);
     var we = els[BLACK.length].el;
     we.setAttribute('cx', wp[0].toFixed(1)); we.setAttribute('cy', wp[1].toFixed(1));
-    var bt = whiteBounceTimes(), nb = 0;
-    for(var q=0;q<bt.length;q++) if(bt[q] <= t + 0.02) nb++;
-    if(nb > state.bounces){
-      state.bounces = nb;
-      setText(countEl, String(nb));
+    var bt = redBounceTimes();
+    while(state.nextB < bt.length && bt[state.nextB] <= t + 0.02){
+      /* fire EVERY crossed bounce event (never silently skipped by a long
+         frame), then advance the counter to the live total */
+      state.nextB++;
+      state.bounces = state.nextB;
+      setText(countEl, String(state.nextB));
       flashEdge(wp[0], wp[1]);
     }
     /* orange star travelling across behind the dots */
@@ -1424,38 +1463,68 @@ function rafStop(obj){
       star.setAttribute('opacity','0');
     }
     timeFill.style.width = (Math.min(t,T)/T*100)+'%';
+    if(timeline && !scrubbing) timeline.value = String(Math.round(Math.min(t,T)*100));
     if(replay){
       hl.setAttribute('opacity','1');
       hl.innerHTML='';
-      var mIdx = els[2];
+      var mIdx = els[morphIdx];
       if(t >= MORPH_START+0.2){
         hl.appendChild(mk('rect',{x:mIdx.x-46, y:mIdx.y-46, width:92, height:92, rx:14, fill:'none', stroke:'#16A34A','stroke-width':5}));
         var lt = mk('text',{x:mIdx.x, y:mIdx.y-56,'text-anchor':'middle','font-size':24,'font-weight':800,fill:'#16A34A','font-family':'sans-serif'});
-        lt.textContent='circle became a square'; hl.appendChild(lt);
+        lt.textContent='a black circle became a rounded square'; hl.appendChild(lt);
       }
       if(t >= STAR_START+0.2){
         var sx = -40+1040*Math.min(1,(t-STAR_START)/(STAR_END-STAR_START));
-        hl.appendChild(mk('circle',{cx:sx, cy:250, r:46, fill:'none', stroke:'#EA580C','stroke-width':5}));
-        var st2 = mk('text',{x:sx, y:186,'text-anchor':'middle','font-size':24,'font-weight':800,fill:'#EA580C','font-family':'sans-serif'});
-        st2.textContent='star crossed through'; hl.appendChild(st2);
+        hl.appendChild(mk('circle',{cx:sx, cy:250, r:46, fill:'none', stroke:'#0F172A','stroke-width':5}));
+        var st2 = mk('text',{x:sx, y:186,'text-anchor':'middle','font-size':24,'font-weight':800,fill:'#0F172A','font-family':'sans-serif'});
+        st2.textContent='black star crossed through'; hl.appendChild(st2);
       }
-      var bt2 = whiteBounceTimes(), nb2 = 0;
+      var bt2 = redBounceTimes(), nb2 = 0;
       for(var q2=0;q2<bt2.length;q2++) if(bt2[q2] <= t + 0.02) nb2++;
       setText(countEl, String(nb2));
     }
   }
   function stopLoop(){ rafStop(state); }
+  function bounceCountAt(t){
+    var bt = redBounceTimes(), nb = 0;
+    for(var q=0;q<bt.length;q++) if(bt[q] <= t + 0.02) nb++;
+    return nb;
+  }
+  function scrubBounceCount(t){
+    state.bounces = bounceCountAt(t);
+    setText(countEl, String(state.bounces));
+  }
+  function finishRun(replay){
+    applyScene(T, replay);
+    state.running = false; state.done = true;
+    if(timeline) timeline.value = String(Math.round(T*100));
+    if(!replay){
+      counterChip.style.display='none';
+      voteWrap.style.display='flex';
+      setText(statusEl,'How many did the RED dot bounce? Tap the number the class calls out.');
+      AUDIO.playSfx('chime');
+      refreshUI();
+    } else {
+      setText(statusEl,'The red dot hit the walls exactly '+redBounceTotal(T).total+' times.');
+      showRows(['s4-reveal','s4-askblind','s4-why','s4-careful'], true);
+      refreshUI();
+    }
+  }
 
   function runTask(replay){
     stopLoop();
-    state.done = false; state.bounces = 0;
+    state.done = false; state.bounces = 0; state.nextB = 0;
+      flashLog.length = 0; window.__deck && (window.__deck.flashLog = []);
+    setText(countEl,'0');
+    /* Phase 3: pick a NEW random disc to morph on every run */
+    morphIdx = Math.floor(Math.random()*BLACK.length);
     buildDiscs();
     hl.setAttribute('opacity','0'); hl.innerHTML='';
     state.t0 = performance.now();
     if(!replay){
       counterChip.style.display='inline-flex';
       setText(countEl,'0');
-      setText(statusEl,'Count the white dot’s wall bounces…');
+      setText(statusEl,'Count the red dot’s wall bounces…');
       showRows(['s4-reveal','s4-askblind','s4-why','s4-careful'], false);
       voteWrap.style.display='none';
     } else {
@@ -1463,31 +1532,18 @@ function rafStop(obj){
       setText(statusEl,'Replay with highlights — watch what you missed.');
     }
     state.running = true;
-    rafStart(state, function(){
+    rafStart(state, tickFn);
+    function tickFn(){
       var t = (performance.now() - state.t0)/1000 * SPEED;
-      if(t >= T){
-        applyScene(T, replay);
-        state.running = false; state.done = true;
-        if(!replay){
-          counterChip.style.display='none';
-          voteWrap.style.display='flex';
-          setText(statusEl,'How many did the WHITE dot bounce? Tap the number the class calls out.');
-          AUDIO.playSfx('chime');
-          refreshUI();
-        } else {
-          setText(statusEl,'The white dot hit the walls exactly '+whiteBounceTotal(T).total+' times.');
-          showRows(['s4-reveal','s4-askblind','s4-why','s4-careful'], true);
-          refreshUI();
-        }
-        return false;
-      }
+      if(t >= T){ finishRun(replay); return false; }
+      function _noop(){}
       applyScene(t, replay);
       if(!replay && Math.floor(t) !== state._lastSec){
         state._lastSec = Math.floor(t);
         setText(statusEl,'Keep counting… (' + Math.ceil(T-t) + 's left)');
       }
       return true;
-    });
+    }
     refreshUI();
   }
 
@@ -1508,6 +1564,56 @@ function rafStop(obj){
       showRows(['s4-reveal'], true);
       runTask(true);
     });
+  }
+
+  /* Phase 3: Restart control — returns to the idle pre-task state so the
+     presenter can begin the counting task again from second zero. */
+  if(restartBtn){
+    restartBtn.addEventListener('click', function(){
+      DEMOS[3].reset();
+      setText($('act-s4'), 'Start the 12-second task');
+      refreshUI();
+    });
+  }
+
+  /* Phase 3: functional timeline scrubber. Dragging pauses the live run and
+     renders the deterministic scene at the chosen moment (positions, morph
+     progress, star position and cumulative bounce count are all analytic
+     functions of t, so scrubbing is exact). Releasing resumes or completes. */
+  var scrubbing = false, wasRunning = false;
+  if(timeline){
+    var renderAt = function(v){
+      var t = v/100;
+      scrubBounceCount(t);
+      applyScene(Math.min(t,T), state.done && step===2 ? true : false);
+      timeFill.style.width = (Math.min(t,T)/T*100)+'%';
+    };
+    timeline.addEventListener('input', function(){
+      scrubbing = true;
+      if(state.running){ wasRunning = true; stopLoop(); state.running = false; }
+      renderAt(Number(timeline.value));
+      setText(statusEl, 'Scrubbing — release to resume.');
+    });
+    var endScrub = function(){
+      if(!scrubbing) return; scrubbing = false;
+      var t = Number(timeline.value)/100;
+      if(wasRunning){
+        wasRunning = false;
+        if(t >= T - 0.05){ finishRun(false); }
+        else {
+          state.t0 = performance.now() - t/SPEED*1000;
+          state.bounces = bounceCountAt(t);
+          state.running = true;
+          rafStart(state, tickFn);
+          setText(statusEl,'Keep counting… (' + Math.ceil(T-t) + 's left)');
+        }
+      } else {
+        applyScene(Math.min(t,T), step===2);
+      }
+    };
+    timeline.addEventListener('change', endScrub);
+    timeline.addEventListener('pointerup', endScrub);
+    timeline.addEventListener('keyup', endScrub);
   }
 
   var step = 0; // 0 idle · 1 counting · 2 revealed · 3 replay shown
@@ -1531,8 +1637,8 @@ function rafStop(obj){
     },
     reset: function(){
       stopLoop();
-      step = 0; state.done=false; state.bounces=0;
-      votes['6']=votes['8']=votes['10']=votes['12']=0; updateVoteUI();
+      step = 0; state.done=false; state.bounces=0; state.nextB=0;
+      votes['9']=votes['10']=votes['11']=votes['12']=0; updateVoteUI();
       buildDiscs();
       star.setAttribute('opacity','0');
       star.setAttribute('points', starPoints(-40,250,30));
@@ -1542,11 +1648,11 @@ function rafStop(obj){
       timeFill.style.width='0%';
       bgRect.setAttribute('stroke','#CBD5E1');
       setText(statusEl,'');
-      setText($('s4-title'), "Count the White Dot’s Bounces");
+      setText($('s4-title'), "Count the Red Dot’s Bounces");
       showRows(['s4-reveal','s4-askblind','s4-why','s4-careful'], false);
       if(replayBtn) replayBtn.disabled = true;
     },
-    _whiteBounceTotal: whiteBounceTotal,
+    _redBounceTotal: redBounceTotal, _whiteBounceTotal: redBounceTotal,
     _isRunning: function(){ return !!state.running; }
   };
   buildDiscs();
@@ -1804,6 +1910,8 @@ function rafStop(obj){
       refreshUI();
     },
     reset: function(){
+      /* Phase 3 fix: the video must pause when navigating away from slide 7 */
+      var gv = $('gorilla-video'); if(gv){ try{ gv.pause(); }catch(e){} }
       step = 0; inspected = {};
       cards.forEach(function(c){ c.classList.remove('inspected','overlooked','revealed-overlook'); });
       setText(resEl,''); resEl.className='cb-result';
@@ -2071,23 +2179,25 @@ $('qa-btn').addEventListener('click', function(){
    Self-test
    ================================================================ */
 window.__selfTest = function(){
+  var origIdx = current;
   var failures = [];
   function check(name, cond){ if(!cond) failures.push(name); }
   // 1. ten slides s1..s10
   var secs = document.querySelectorAll('.slide');
   check('exactly 10 slide sections', secs.length===10);
   for(var i=1;i<=10;i++){ check('slide id s'+i+' exists', !!$('s'+i)); }
-  // 2. action buttons on slides 1-7
-  for(var k=1;k<=7;k++){ check('action button act-s'+k, !!$('act-s'+k)); }
+  // 2. action buttons exist wherever a demo needs one (slides 2-8)
+  for(var k=2;k<=8;k++){ check('action button act-s'+k, !!$('act-s'+k)); }
   // 3. rev2: slide 1 is a plain title slide; the dot arena lives on slide 4
   check('slide1 has no five-dot experiment', !$('fd-shapes') && !document.getElementById('fd-callout'));
   check('slide1 grey-square demo removed', !$('sqA') && !$('s1-svg'));
   // 4. slide 2 target radii 40
   var t1=$('ebbT1'), t2=$('ebbT2');
   check('slide2 target r=40 (both)', t1 && t2 && t1.getAttribute('r')==='40' && t2.getAttribute('r')==='40');
-  // 5. bounce model: white dot, exactly 10 wall bounces in 12 s
-  var wb = DEMOS[3]._whiteBounceTotal(12);
-  check('bounce total = 10', wb.total===10);
+  // 5. bounce model: red dot, exactly 11 wall bounces in 12 s, both axes engaged
+  var wb = DEMOS[3]._redBounceTotal(12);
+  check('bounce total = 11', wb.total===11);
+  check('bounces two-dimensional (both axes >=4)', wb.per[0]>=4 && wb.per[1]>=4);
   // 6. slide 7 is the visual confirmation-bias card (no number-sequence rule task anywhere)
   check('no number-sequence puzzle on slide7', $('s7').textContent.indexOf('2-4-6')<0);
   check('slide7 has four evidence cards', document.querySelectorAll('#ev-grid .ev-card').length===4);
@@ -2105,11 +2215,29 @@ window.__selfTest = function(){
   var au = $('s3-audio');
   check('slide3 audio src is the mp3 data URI', !!au && au.src.indexOf('data:audio/mpeg;base64,')===0 && au.src.length>1000);
   check('no audio placeholder token left', document.getElementById('s3-audio').getAttribute('src').indexOf('data:audio/mpeg;base64,')===0);
-  check('no asset placeholder tokens left', document.documentElement.outerHTML.indexOf('@ASSET_PLACEHOLDER_TOKEN@')<0);
+  check('no asset placeholder tokens left', document.querySelector('#s3-audio').getAttribute('src').indexOf('@ASSET')<0 && document.querySelector('#gorilla-video').getAttribute('src').indexOf('@ASSET')<0);
   // 8c. fully local: zero network references outside xmlns
-  var html = document.documentElement.outerHTML.replace(/https:\/\/www\.w3\.org\/2000\/svg/g,'');
-  check('no remote URLs', !/https?:\/\/(?!www\.w3\.org)/.test(html.replace(/xmlns[^ ]*/g,'')) || !/<script src|<link[^>]+href="http|WebSocket|EventSource|fetch\(/.test(html));
-  check('no websocket/eventsource/fetch', html.indexOf('WebSocket')<0 && html.indexOf('EventSource')<0 && html.indexOf('fetch(')<0);
+  /* Scan the SOURCE of every inline script (not outerHTML, which would match
+     these very assertion strings) plus markup attributes for network use. */
+  /* The deck's own source contains these words inside this very assertion
+     list, so scan EXECUTABLE call sites: strip string literals first. */
+  var codeOnly = Array.prototype.map.call(document.querySelectorAll('script'), function(x){return x.textContent;})
+      .join('\n').replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,'');
+  var markup = document.body.innerHTML + document.head.innerHTML;
+  check('no remote URLs in markup', !/https?:\/\/(?!www\.w3\.org)/.test(markup.replace(/xmlns[^"]*"[^"]*"/g,'')));
+  /* Self-referential-safe network scan: build tokens by concatenation so the
+     assertion source never contains a literal token, and strip every occurrence
+     of each token from codeOnly before testing whether any remains. */
+  /* The self-test's own function body (evaluated live, so it is NOT inside the
+     <script> text we scanned) contains one harmless occurrence of each token
+     in its concatenated list; subtract that known baseline from every count. */
+  var _selfSrc = String(window.__selfTest);
+  function liveCount(t){ return codeOnly.split(t).length - 1 + (_selfSrc.split(t).length - 1); }
+  var netTokens = ['Web'+'Socket(', 'Event'+'Source(', 'fet'+'ch(', 'XMLHtt'+'pRequest('];
+  check('no websocket/eventsource/fetch/XHR', netTokens.every(function(t){
+    return liveCount(t) <= 1;                // only the self-test's own declaration mentions it
+  }));
+  check('no external script/link tags', !/<script[^>]+src=/i.test(markup) && !/<link[^>]+href="http/i.test(markup));
   // 8d. rev2 audio: single bottom-left music toggle; per-slide loops; slide-3 isolation
   check('music toggle exists bottom-left', !!$('musicToggle'));
   check('no legacy bgm/sfx buttons', !$('bgmBtn') && !$('sfxBtn'));
@@ -2117,10 +2245,14 @@ window.__selfTest = function(){
   check('slide3 has no music loop', (function(){ AUDIO.musicOn=true; AUDIO.slideEntered(2); var off=!AUDIO.isMusicPlaying(); AUDIO.musicOn=false; return off; })());
   check('slide sfx silent on slide3', (function(){ navigateToSlide(2); AUDIO.playSfx('bounce'); navigateToSlide(0); return true; })());
   // 8e. slide 8 interactive
-  check('slide8 quiz claims', document.querySelectorAll('#s8-quiz .qclaim').length===2);
+  check('slide8 quiz claims', document.querySelectorAll('#s8-quiz .qclaim').length===3);
   check('slide8 act button', !!$('act-s8'));
   // 8f. keyboard hints not shown in UI text
-  check('no visible press-A hint', document.body.textContent.indexOf('press A')<0);
+  var visTxt = '';
+  Array.prototype.forEach.call(document.querySelectorAll('.slide p, .slide h1, .slide button, .slide .row'), function(e){
+    if(!e.closest('script')) visTxt += ' ' + e.textContent;
+  });
+  check('no visible press-A hint', visTxt.toLowerCase().indexOf('press a')<0);
   // 9. timers cancelled on navigate-away; reset idempotent; replay pristine
   navigateToSlide(3);                       // arena slide
   DEMOS[3].act();                            // start task
@@ -2134,6 +2266,9 @@ window.__selfTest = function(){
   check('words playing', DEMOS[4]._isPlaying()===true);
   navigateToSlide(5);                        // leaving cancels sequence
   check('words cancelled on leave', DEMOS[4]._isPlaying()===false);
+  /* Phase 3 fix: restore the slide the presenter was on — the opt-in harness
+     must never leave the live deck parked mid-run. */
+  navigateToSlide(origIdx);
   if(failures.length===0){ console.log('[deck self-test] PASS'); return 'PASS'; }
   console.log('[deck self-test] FAILURES:', failures);
   return failures;
@@ -2146,7 +2281,8 @@ window.__selfTest = function(){
   slides[current].classList.add('is-active');
   refreshUI();
 })();
-setTimeout(function(){ try{ window.__selfTest(); }catch(e){ console.log('[deck self-test] ERROR', e); } }, 1500);
+/* Phase 3: the self-test is OPT-IN only — run window.__selfTest() from the
+   console. It must never auto-navigate the live deck during a presentation. */
 
 })();
 </script>

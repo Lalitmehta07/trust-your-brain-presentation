@@ -1,2 +1,8 @@
 build/
 .build-artifacts/
+
+# Phase 3 verification artifacts, exports and backups (not part of the presentation)
+*.zip
+phase3-verify/
+.build-artifacts/
+.phase3-backup/
